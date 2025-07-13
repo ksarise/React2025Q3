@@ -3,7 +3,7 @@ import './App.css';
 import Search from './components/Search/Search';
 import SearchResults from './components/SearchResults/SearchResults';
 import { getCharts, searchSong } from './api/chart';
-import { type Track, type AppState, type ApiResponse } from './type';
+import { type Track, type AppState, type ApiResponse } from './types';
 import { addIndices } from './utils/utils';
 import Loader from './components/Loader/Loader';
 
@@ -17,6 +17,7 @@ class App extends React.Component<object, AppState> {
       query: savedQuery,
       results: savedResults ? JSON.parse(savedResults) : [],
       isLoading: false,
+      error: null,
     };
 
     this.updateQuery = this.updateQuery.bind(this);
@@ -82,10 +83,15 @@ class App extends React.Component<object, AppState> {
       this.searchTracks(updatedQuery);
     }
   }
+  throwError = () => {
+    this.setState({ error: 'true' });
+  };
 
   render() {
     const isSearching = this.state.query.trim() !== '';
-
+    if (this.state.error) {
+      throw new Error('OOOPS! Wrong went something');
+    }
     return (
       <div className="min-h-screen bg-gray-900 text-white min-w-[800px]">
         <header className="bg-black py-4 px-6 flex items-center justify-between border-b border-gray-800">
@@ -109,6 +115,14 @@ class App extends React.Component<object, AppState> {
                 searchQuery={this.state.query}
               />
             )}
+            <div className="flex gap-2 justify-center items-center">
+              <button
+                onClick={this.throwError}
+                className="text-white bg-[#ec2d2d] rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center  me-2 mb-2"
+              >
+                Test Error Boundary
+              </button>
+            </div>
           </div>
         </main>
       </div>

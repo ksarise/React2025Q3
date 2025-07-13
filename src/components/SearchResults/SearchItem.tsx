@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { type SearchItemProps } from '../../type';
+import { type SearchItemProps } from '../../types';
 
 class SearchItem extends Component<SearchItemProps> {
   render() {

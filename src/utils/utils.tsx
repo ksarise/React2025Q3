@@ -1,4 +1,4 @@
-import { type ApiResponse, type Track, type TrackSearchResult } from '../type';
+import { type ApiResponse, type Track, type TrackSearchResult } from '../types';
 
 export const addIndices = (data: ApiResponse): Track[] => {
   //Chart

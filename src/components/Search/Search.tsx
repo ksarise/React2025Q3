@@ -1,5 +1,5 @@
 import { Component, type MouseEventHandler } from 'react';
-import { type SearchProps, type SearchState } from '../../type';
+import { type SearchProps, type SearchState } from '../../types';
 
 class Search extends Component<SearchProps, SearchState> {
   constructor(props: SearchProps) {

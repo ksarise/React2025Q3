@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { type Track, type SearchResultsProps } from '../../type';
+import { type Track, type SearchResultsProps } from '../../types.ts';
 import SearchItem from './SearchItem.tsx';
 
 class SearchResults extends Component<SearchResultsProps, object> {
@@ -8,7 +8,7 @@ class SearchResults extends Component<SearchResultsProps, object> {
   render() {
     return (
       <section className="container mx-auto py-3">
-        <h1 className="font-bold text-lg uppercase">
+        <h1 className="font-medium text-lg">
           {this.props.isSearching ? <>Search Results</> : <>Top Chart Tracks</>}
         </h1>
         <div className="grid grid-cols-12 gap-4 px-4 py-3 text-xs text-gray-500 font-medium border-b border-gray-700 w-full">
