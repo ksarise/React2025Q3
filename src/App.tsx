@@ -9,39 +9,59 @@ import { addIndeсes } from './utils/utils';
 class App extends React.Component<object, AppState> {
   constructor(props: object) {
     super(props);
+    const savedQuery = localStorage.getItem('term') || '';
+    const savedResults = localStorage.getItem('searchResults');
+
     this.state = {
-      query: localStorage.getItem('term') || '',
-      results: [],
+      query: savedQuery,
+      results: savedResults ? JSON.parse(savedResults) : [],
     };
+
     this.updateQuery = this.updateQuery.bind(this);
     this.loadTopCharts = this.loadTopCharts.bind(this);
     this.searchTracks = this.searchTracks.bind(this);
   }
 
   componentDidMount(): void {
-    this.loadTopCharts();
+    if (this.state.query) {
+      this.searchTracks(this.state.query);
+    } else {
+      this.loadTopCharts();
+    }
   }
 
   loadTopCharts() {
     getCharts().then((data: ApiResponse) => {
       const tracks: Track[] = addIndeсes(data);
-      this.setState({ results: tracks });
+      this.setState({
+        results: tracks,
+      });
     });
   }
 
   searchTracks(query: string) {
+    this.setState({
+      query: query,
+    });
+    window.history.pushState(null, '', `?search=${encodeURIComponent(query)}`);
+
     searchSong(query).then((data: ApiResponse) => {
       const tracks: Track[] = addIndeсes(data);
-      this.setState({ results: tracks });
+      localStorage.setItem('term', query);
+      localStorage.setItem('searchResults', JSON.stringify(tracks));
+      this.setState({
+        results: tracks,
+      });
     });
   }
 
   updateQuery(nextState: { query: string }) {
     const query = nextState.query.trim();
-    this.setState({ query });
-    localStorage.setItem('term', query);
 
     if (query === '') {
+      window.history.pushState(null, '', window.location.pathname);
+      localStorage.removeItem('term');
+      localStorage.removeItem('searchResults');
       this.loadTopCharts();
     } else {
       this.searchTracks(query);
@@ -53,7 +73,7 @@ class App extends React.Component<object, AppState> {
       <div className="min-h-screen bg-gray-900 text-white">
         <header className="bg-black py-4 px-6 flex items-center justify-between border-b border-gray-800">
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-red-600 mr-6">Almost.fm</h1>
+            <h1 className="text-2xl font-bold text-red-600 mr-6">almost.fm</h1>
           </div>
         </header>
         <main className="container mx-auto px-4 py-8">
