@@ -1,13 +1,14 @@
 import React, { type ReactNode } from 'react';
-
 import './App.css';
-import { Home } from './Home.tsx';
+import { Home } from './Home';
 
 class App extends React.Component {
   render(): ReactNode {
     return (
       <>
-        <Home />
+        <div className="container mx-auto">
+          <Home />
+        </div>
       </>
     );
   }
