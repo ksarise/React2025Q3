@@ -54,6 +54,7 @@ export interface TrackSearchResult {
 export type SearchResultsProps = {
   tracks: Track[];
   isSearching: boolean;
+  searchQuery: string;
 };
 export type SearchItemProps = {
   track: Track;
@@ -61,6 +62,7 @@ export type SearchItemProps = {
 export type AppState = {
   query: string;
   results: Track[];
+  isLoading: boolean;
 };
 export type SearchProps = {
   onQuery: (arg0: { query: string }) => void;

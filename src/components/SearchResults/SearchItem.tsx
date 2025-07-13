@@ -15,7 +15,7 @@ class SearchItem extends Component<SearchItemProps> {
               src={smallImage['#text']}
               alt={track.name}
               className="w-10 h-10 rounded mr-3"
-              //Если увидели хоть одну не дефолтную картинку, то вы счастливчик :D
+              //Если увидели хоть одну не плейсхолдерную картинку, то вы счастливчик :D
               onError={(e) => {
                 e.currentTarget.src =
                   'https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png';

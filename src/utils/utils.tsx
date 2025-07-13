@@ -1,6 +1,6 @@
 import { type ApiResponse, type Track, type TrackSearchResult } from '../type';
 
-export const addIndeсes = (data: ApiResponse): Track[] => {
+export const addIndices = (data: ApiResponse): Track[] => {
   //Chart
   if (data.tracks && data.tracks.track) {
     return data.tracks.track.map((track: Track, index: number) => ({
