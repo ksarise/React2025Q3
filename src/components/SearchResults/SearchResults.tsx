@@ -1,28 +1,27 @@
 import { Component } from 'react';
-import { getPeople } from '../../api/chart.tsx';
-import { type Track } from '../../type';
-import { addIndeсes } from '../../utils/utils.tsx';
-import SearchResult from './SearchResult';
+import { type Track, type SearchResultsProps } from '../../type';
+import SearchItem from './SearchItem.tsx';
 
-class SearchResults extends Component {
+class SearchResults extends Component<SearchResultsProps, object> {
   state = { results: [] as Track[] };
-  componentDidMount(): void {
-    getPeople().then((data) => {
-      const tracks: Track[] = addIndeсes(data);
-      console.log('tracks', tracks);
-      this.setState({ results: tracks });
-      localStorage.setItem('tracks', JSON.stringify(tracks));
-    });
-  }
+
   render() {
-    const { results } = this.state;
     return (
       <section className="container mx-auto py-3">
-        <h1 className="font-bold text-lg uppercase">SearchResults</h1>
-        <div className="flex justify-center items-center gap-4 flex-col pt-3 divide-y-2 divide-sky-400 max-w-6xl py-3">
-          {results &&
-            results.map((item: Track) => (
-              <SearchResult key={item.id} track={item} />
+        <h1 className="font-bold text-lg uppercase">
+          {this.props.isSearching ? <>Search Results</> : <>Top Chart Tracks</>}
+        </h1>
+        <div className="grid grid-cols-12 gap-4 px-4 py-3 text-xs text-gray-500 font-medium border-b border-gray-700 w-full">
+          <div className="col-span-1 w-12">#</div>
+          <div className="col-span-5 min-w-[200px]">TRACK</div>
+          <div className="col-span-3 min-w-[150px]">ARTIST</div>
+          <div className="col-span-2 text-right min-w-[100px]">LISTENERS</div>
+          <div className="col-span-1 w-12"></div>
+        </div>
+        <div className="divide-y divide-gray-700 w-full">
+          {this.props.tracks &&
+            this.props.tracks.map((item: Track) => (
+              <SearchItem key={item.id} track={item} />
             ))}
         </div>
       </section>

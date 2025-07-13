@@ -1,39 +1,73 @@
-import { Component } from 'react';
-class Search extends Component {
+import { Component, type MouseEventHandler } from 'react';
+import { type SearchProps, type SearchState } from '../../type';
+
+class Search extends Component<SearchProps, SearchState> {
+  constructor(props: SearchProps) {
+    super(props);
+    this.state = {
+      query: props.initialQuery || '',
+    };
+  }
+
+  componentDidUpdate(prevProps: SearchProps) {
+    if (prevProps.initialQuery !== this.props.initialQuery) {
+      this.setState({ query: this.props.initialQuery || '' });
+    }
+  }
+
+  handleClick: MouseEventHandler<HTMLButtonElement> = (e): void => {
+    e.preventDefault();
+    this.props.onQuery({ query: this.state.query });
+  };
+
+  handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ query: e.target.value });
+  };
+
+  handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      this.props.onQuery({ query: this.state.query });
+    }
+  };
+
   render() {
     return (
-      <section className="container mx-auto py-3">
-        <form action="">
-          <div className="flex items-center gap-4 justify-center">
-            <input
-              type="search"
-              name="search"
-              id="searchInput"
-              placeholder="Search"
-              className="bg-blue-100 focus:ring-blue-500 block w-[400px] p-2.5 rounded-lg"
-            />
-            <button type="submit">
-              <svg
-                className="w-4 h-4"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                />
-              </svg>
-              <span className="sr-only">Search</span>
-            </button>
-          </div>
-        </form>
+      <section className="relative">
+        <div className="flex items-center">
+          <input
+            type="search"
+            name="search"
+            id="searchInput"
+            placeholder="Search for tracks, artists..."
+            value={this.state.query}
+            onChange={this.handleInputChange}
+            onKeyDown={this.handleKeyDown}
+            className="w-full bg-gray-800 text-white py-3 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 border border-gray-700"
+          />
+
+          <button
+            type="button"
+            onClick={this.handleClick}
+            className="ml-2 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg text-sm font-medium flex items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Search
+          </button>
+        </div>
       </section>
     );
   }
 }
+
 export default Search;

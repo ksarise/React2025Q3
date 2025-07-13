@@ -1,10 +1,3 @@
-export type MyProps = {
-  message: string;
-};
-export type MyState = {
-  count: number;
-};
-export type ResourceUrl = string;
 export type Streamable = {
   '#text': string;
   fulltrack: string;
@@ -33,20 +26,46 @@ export interface Track {
   image: Image[];
   id: number;
 }
-export interface Response {
+export interface ApiResponse {
   '@attr': {
     page: string;
     pages: string;
     perPage: string;
     total: string;
   };
-  tracks: {
+  tracks?: {
     track: Track[];
   };
+  results?: {
+    trackmatches: {
+      track: TrackSearchResult[];
+    };
+  };
+}
+export interface TrackSearchResult {
+  name: string;
+  artist: string;
+  url: string;
+  streamable: string;
+  listeners: string;
+  image: Image[];
+  mbid: string;
 }
 export type SearchResultsProps = {
   tracks: Track[];
+  isSearching: boolean;
 };
-export type SearchResultProps = {
+export type SearchItemProps = {
   track: Track;
+};
+export type AppState = {
+  query: string;
+  results: Track[];
+};
+export type SearchProps = {
+  onQuery: (arg0: { query: string }) => void;
+  initialQuery?: string;
+};
+export type SearchState = {
+  query: string;
 };
