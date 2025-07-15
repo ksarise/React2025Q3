@@ -1,6 +1,6 @@
 export const getCharts = async () => {
   const response = await fetch(
-    'https://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=96356d898b4dbfd7da44d3c624d4898e&format=json&limit=10'
+    `https://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=${import.meta.env.VITE_API_KEY}&format=json&limit=10`
   );
   if (!response.ok) {
     throw new Error(response.statusText);
@@ -9,7 +9,7 @@ export const getCharts = async () => {
 };
 export const searchSong = async (query: string) => {
   const response = await fetch(
-    `https://ws.audioscrobbler.com/2.0/?method=track.search&track=${query}&api_key=96356d898b4dbfd7da44d3c624d4898e&format=json&limit=10`
+    `https://ws.audioscrobbler.com/2.0/?method=track.search&track=${query}&api_key=${import.meta.env.VITE_API_KEY}&format=json&limit=10`
   );
   if (!response.ok) {
     throw new Error(response.statusText);

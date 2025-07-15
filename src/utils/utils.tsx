@@ -1,14 +1,13 @@
 import { type ApiResponse, type Track, type TrackSearchResult } from '../types';
 
 export const addIndices = (data: ApiResponse): Track[] => {
-  //Chart
   if (data.tracks && data.tracks.track) {
     return data.tracks.track.map((track: Track, index: number) => ({
       ...track,
       id: index + 1,
     }));
   }
-  //Search
+
   if (
     data.results &&
     data.results.trackmatches &&

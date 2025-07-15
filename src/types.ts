@@ -64,6 +64,7 @@ export type AppState = {
   results: Track[];
   isLoading: boolean;
   error: string | null;
+  isSearching: boolean;
 };
 export type SearchProps = {
   onQuery: (arg0: { query: string }) => void;

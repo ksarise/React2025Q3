@@ -38,7 +38,7 @@ class Search extends Component<SearchProps, SearchState> {
             type="search"
             name="search"
             id="searchInput"
-            placeholder="Search for tracks, artists..."
+            placeholder="Search for tracks, artists.."
             value={this.state.query}
             onChange={this.handleInputChange}
             onKeyDown={this.handleKeyDown}

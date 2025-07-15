@@ -10,14 +10,18 @@ import Loader from './components/Loader/Loader';
 class App extends React.Component<object, AppState> {
   constructor(props: object) {
     super(props);
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSearch = urlParams.get('search');
     const savedQuery = localStorage.getItem('term') || '';
     const savedResults = localStorage.getItem('searchResults');
-
+    const initialQuery = urlSearch || savedQuery;
+    const isInitialSearch = !!initialQuery;
     this.state = {
-      query: savedQuery,
+      query: initialQuery,
       results: savedResults ? JSON.parse(savedResults) : [],
       isLoading: false,
       error: null,
+      isSearching: isInitialSearch,
     };
 
     this.updateQuery = this.updateQuery.bind(this);
@@ -26,15 +30,18 @@ class App extends React.Component<object, AppState> {
   }
 
   componentDidMount(): void {
-    if (this.state.query && this.state.results.length === 0) {
-      this.searchTracks(this.state.query);
-    } else if (!this.state.query) {
+    if (this.state.query) {
+      if (this.state.results.length === 0) {
+        this.searchTracks(this.state.query);
+      }
+    } else {
       this.loadTopCharts();
     }
   }
 
   loadTopCharts() {
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, isSearching: false });
+
     getCharts()
       .then((data: ApiResponse) => {
         const tracks: Track[] = addIndices(data);
@@ -52,6 +59,7 @@ class App extends React.Component<object, AppState> {
     this.setState({
       isLoading: true,
       query: query,
+      isSearching: true,
     });
     window.history.pushState(null, '', `?search=${encodeURIComponent(query)}`);
 
@@ -83,42 +91,41 @@ class App extends React.Component<object, AppState> {
       this.searchTracks(updatedQuery);
     }
   }
+
   throwError = () => {
     this.setState({ error: 'true' });
   };
 
   render() {
-    const isSearching = this.state.query.trim() !== '';
     if (this.state.error) {
-      throw new Error('OOOPS! Wrong went something');
+      throw new Error('OOOPS! Something went wrong');
     }
     return (
-      <div className="min-h-screen bg-gray-900 text-white min-w-[800px]">
+      <div className="min-h-[90vh] bg-gray-900 text-white min-w-[800px]">
         <header className="bg-black py-4 px-6 flex items-center justify-between border-b border-gray-800">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold text-red-600 mr-6">almost.fm</h1>
           </div>
+          <Search onQuery={this.updateQuery} initialQuery={this.state.query} />
         </header>
 
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            <Search
-              onQuery={this.updateQuery}
-              initialQuery={this.state.query}
-            />
             {this.state.isLoading ? (
               <Loader />
+            ) : this.state.results.length === 0 ? (
+              <h1 className="font-medium text-lg ">No Results Found</h1>
             ) : (
               <SearchResults
                 tracks={this.state.results}
-                isSearching={isSearching}
+                isSearching={this.state.isSearching}
                 searchQuery={this.state.query}
               />
             )}
             <div className="flex gap-2 justify-center items-center">
               <button
                 onClick={this.throwError}
-                className="text-white bg-[#ec2d2d] rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center  me-2 mb-2"
+                className="text-white bg-[#ec2d2d] rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2"
               >
                 Test Error Boundary
               </button>
