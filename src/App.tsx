@@ -1,134 +1,141 @@
 import React from 'react';
 import './App.css';
-import Search from './components/Search/Search';
-import SearchResults from './components/SearchResults/SearchResults';
-import { getCharts, searchSong } from './api/chart';
-import { type Track, type AppState, type ApiResponse } from './types';
-import { addIndices } from './utils/utils';
-import Loader from './components/Loader/Loader';
+import Header from './components/Header/Header.tsx';
+import MainContent from './components/MainContent/MainContent.tsx';
+import ErrorButton from './error/ErrorButton.tsx';
+
+import { type AppState } from './types';
+import {
+  getSavedQuery,
+  getSavedResults,
+  saveSearch,
+  clearSearch,
+} from './utils/localStorage';
+import { getQueryFromURL, setQueryToURL, clearQueryFromURL } from './utils/url';
+import { fetchTopCharts, fetchTracks } from './services/songService';
 
 class App extends React.Component<object, AppState> {
   constructor(props: object) {
     super(props);
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlSearch = urlParams.get('search');
-    const savedQuery = localStorage.getItem('term') || '';
-    const savedResults = localStorage.getItem('searchResults');
-    const initialQuery = urlSearch || savedQuery;
-    const isInitialSearch = !!initialQuery;
+
     this.state = {
-      query: initialQuery,
-      results: savedResults ? JSON.parse(savedResults) : [],
+      query: '',
+      results: [],
       isLoading: false,
       error: null,
-      isSearching: isInitialSearch,
+      isSearching: false,
     };
 
+    this.handleSearch = this.handleSearch.bind(this);
+    this.handleClearSearch = this.handleClearSearch.bind(this);
     this.updateQuery = this.updateQuery.bind(this);
-    this.loadTopCharts = this.loadTopCharts.bind(this);
-    this.searchTracks = this.searchTracks.bind(this);
+    this.throwError = this.throwError.bind(this);
   }
 
-  componentDidMount(): void {
-    if (this.state.query) {
-      if (this.state.results.length === 0) {
-        this.searchTracks(this.state.query);
-      }
-    } else {
+  componentDidMount() {
+    const urlQuery = getQueryFromURL();
+    const savedQuery = getSavedQuery();
+    const savedResults = getSavedResults();
+
+    const initialQuery = urlQuery || savedQuery;
+    const isSearching = !!initialQuery;
+
+    this.setState(
+      {
+        query: initialQuery,
+        results: savedResults,
+        isSearching,
+      },
+      this.loadInitialData
+    );
+  }
+
+  loadInitialData = () => {
+    const { query, results } = this.state;
+
+    if (query && results.length === 0) {
+      this.searchTracks(query);
+    } else if (!query) {
       this.loadTopCharts();
+    }
+  };
+
+  async loadTopCharts() {
+    this.setState({ isLoading: true, isSearching: false });
+
+    try {
+      const tracks = await fetchTopCharts();
+      this.setState({ results: tracks });
+    } catch (error) {
+      console.error('Failed to load top charts:', error);
+    } finally {
+      this.setState({ isLoading: false });
     }
   }
 
-  loadTopCharts() {
-    this.setState({ isLoading: true, isSearching: false });
+  async searchTracks(query: string) {
+    this.setState({ isLoading: true, query, isSearching: true });
 
-    getCharts()
-      .then((data: ApiResponse) => {
-        const tracks: Track[] = addIndices(data);
-        this.setState({
-          results: tracks,
-          isLoading: false,
-        });
-      })
-      .catch(() => {
-        this.setState({ isLoading: false });
-      });
+    setQueryToURL(query);
+
+    try {
+      const tracks = await fetchTracks(query);
+      saveSearch(query, tracks);
+      this.setState({ results: tracks });
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      this.setState({ isLoading: false });
+    }
   }
 
-  searchTracks(query: string) {
-    this.setState({
-      isLoading: true,
-      query: query,
-      isSearching: true,
-    });
-    window.history.pushState(null, '', `?search=${encodeURIComponent(query)}`);
+  handleSearch(query: string) {
+    const trimmed = query.trim();
+    if (trimmed) {
+      this.searchTracks(trimmed);
+    }
+  }
 
-    searchSong(query)
-      .then((data: ApiResponse) => {
-        const tracks: Track[] = addIndices(data);
-        localStorage.setItem('term', query);
-        localStorage.setItem('searchResults', JSON.stringify(tracks));
-
-        this.setState({
-          results: tracks,
-          isLoading: false,
-        });
-      })
-      .catch(() => {
-        this.setState({ isLoading: false });
-      });
+  handleClearSearch() {
+    clearQueryFromURL();
+    clearSearch();
+    this.loadTopCharts();
   }
 
   updateQuery({ query }: { query: string }) {
-    const updatedQuery = query.trim();
-
-    if (updatedQuery === '') {
-      window.history.pushState(null, '', window.location.pathname);
-      localStorage.removeItem('term');
-      localStorage.removeItem('searchResults');
-      this.loadTopCharts();
+    const trimmed = query.trim();
+    if (!trimmed) {
+      this.handleClearSearch();
     } else {
-      this.searchTracks(updatedQuery);
+      this.handleSearch(trimmed);
     }
   }
 
-  throwError = () => {
+  throwError() {
     this.setState({ error: 'true' });
-  };
+  }
 
   render() {
-    if (this.state.error) {
+    const { isLoading, results, isSearching, query, error } = this.state;
+
+    if (error) {
       throw new Error('OOOPS! Something went wrong');
     }
+
     return (
       <div className="min-h-[90vh] bg-gray-900 text-white min-w-[800px]">
-        <header className="bg-black py-4 px-6 flex items-center justify-between border-b border-gray-800">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-red-600 mr-6">almost.fm</h1>
-          </div>
-          <Search onQuery={this.updateQuery} initialQuery={this.state.query} />
-        </header>
-
+        <Header onQuery={this.updateQuery} initialQuery={query} />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            {this.state.isLoading ? (
-              <Loader />
-            ) : this.state.results.length === 0 ? (
-              <h1 className="font-medium text-lg ">No Results Found</h1>
-            ) : (
-              <SearchResults
-                tracks={this.state.results}
-                isSearching={this.state.isSearching}
-                searchQuery={this.state.query}
-              />
-            )}
-            <div className="flex gap-2 justify-center items-center">
-              <button
-                onClick={this.throwError}
-                className="text-white bg-[#ec2d2d] rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2"
-              >
-                Test Error Boundary
-              </button>
+            <MainContent
+              isLoading={isLoading}
+              results={results}
+              isSearching={isSearching}
+              query={query}
+              error={error}
+            />
+            <div className="flex gap-2 justify-center items-center mt-8">
+              <ErrorButton onClick={this.throwError} />
             </div>
           </div>
         </main>

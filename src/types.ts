@@ -58,6 +58,7 @@ export type SearchResultsProps = {
 };
 export type SearchItemProps = {
   track: Track;
+  isImageLoading: boolean;
 };
 export type AppState = {
   query: string;
@@ -73,3 +74,14 @@ export type SearchProps = {
 export type SearchState = {
   query: string;
 };
+export interface HeaderProps {
+  onQuery: (arg: { query: string }) => void;
+  initialQuery: string;
+}
+export interface MainContentProps {
+  isLoading: boolean;
+  results: Track[];
+  isSearching: boolean;
+  query: string;
+  error: string | null;
+}

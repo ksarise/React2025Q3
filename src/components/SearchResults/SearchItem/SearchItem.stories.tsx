@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import SearchItem from './SearchItem.tsx';
-import { type Track } from '../../types';
+import { type Track } from '../../../types.ts';
 
 const mockTrack: Track = {
   id: 1,

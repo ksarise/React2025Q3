@@ -1,10 +1,8 @@
 import { Component } from 'react';
-import { type Track, type SearchResultsProps } from '../../types.ts';
-import SearchItem from './SearchItem.tsx';
+import { type SearchResultsProps } from '../../types.ts';
+import SearchItem from './SearchItem/SearchItem.tsx';
 
-class SearchResults extends Component<SearchResultsProps, object> {
-  state = { results: [] as Track[] };
-
+class SearchResults extends Component<SearchResultsProps> {
   render() {
     return (
       <section className="container mx-auto py-3">
@@ -19,13 +17,13 @@ class SearchResults extends Component<SearchResultsProps, object> {
           <div className="col-span-1 w-12"></div>
         </div>
         <div className="divide-y divide-gray-700 w-full">
-          {this.props.tracks &&
-            this.props.tracks.map((item: Track) => (
-              <SearchItem key={item.id} track={item} />
-            ))}
+          {this.props.tracks.map((item) => (
+            <SearchItem key={item.id} track={item} isImageLoading={false} />
+          ))}
         </div>
       </section>
     );
   }
 }
+
 export default SearchResults;

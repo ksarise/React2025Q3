@@ -10,13 +10,15 @@ class Search extends Component<SearchProps, SearchState> {
   }
 
   componentDidUpdate(prevProps: SearchProps) {
-    if (prevProps.initialQuery !== this.props.initialQuery) {
+    if (
+      prevProps.initialQuery !== this.props.initialQuery &&
+      this.props.initialQuery !== this.state.query
+    ) {
       this.setState({ query: this.props.initialQuery || '' });
     }
   }
 
-  handleClick: MouseEventHandler<HTMLButtonElement> = (e): void => {
-    e.preventDefault();
+  handleClick: MouseEventHandler<HTMLButtonElement> = (): void => {
     this.props.onQuery({ query: this.state.query });
   };
 
@@ -44,7 +46,6 @@ class Search extends Component<SearchProps, SearchState> {
             onKeyDown={this.handleKeyDown}
             className="w-full bg-gray-800 text-white py-3 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 border border-gray-700"
           />
-
           <button
             type="button"
             onClick={this.handleClick}
