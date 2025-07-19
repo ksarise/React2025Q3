@@ -1,53 +1,24 @@
 import React from 'react';
 import './App.css';
-import Header from './components/Header/Header.tsx';
-import MainContent from './components/MainContent/MainContent.tsx';
-import ErrorButton from './error/ErrorButton.tsx';
-
+import Header from './components/Header/Header';
+import MainContent from './components/MainContent/MainContent';
+import ErrorButton from './error/ErrorButton';
 import { type AppState } from './types';
-import {
-  getSavedQuery,
-  getSavedResults,
-  saveSearch,
-  clearSearch,
-} from './utils/localStorage';
-import { getQueryFromURL, setQueryToURL, clearQueryFromURL } from './utils/url';
-import { fetchTopCharts, fetchTracks } from './services/songService';
+import appInitializer from './utils/appInitializer';
+import { handleSearch } from './services/Search/searchService';
+import { loadTopCharts, searchTracks } from './services/dataService';
 
 class App extends React.Component<object, AppState> {
   constructor(props: object) {
     super(props);
 
-    this.state = {
-      query: '',
-      results: [],
-      isLoading: false,
-      error: null,
-      isSearching: false,
-    };
-
-    this.handleSearch = this.handleSearch.bind(this);
-    this.handleClearSearch = this.handleClearSearch.bind(this);
+    this.state = appInitializer();
     this.updateQuery = this.updateQuery.bind(this);
     this.throwError = this.throwError.bind(this);
   }
 
   componentDidMount() {
-    const urlQuery = getQueryFromURL();
-    const savedQuery = getSavedQuery();
-    const savedResults = getSavedResults();
-
-    const initialQuery = urlQuery || savedQuery;
-    const isSearching = !!initialQuery;
-
-    this.setState(
-      {
-        query: initialQuery,
-        results: savedResults,
-        isSearching,
-      },
-      this.loadInitialData
-    );
+    this.loadInitialData();
   }
 
   loadInitialData = () => {
@@ -60,66 +31,27 @@ class App extends React.Component<object, AppState> {
     }
   };
 
-  async loadTopCharts() {
-    this.setState({ isLoading: true, isSearching: false });
+  loadTopCharts = async () => {
+    await loadTopCharts(this);
+  };
 
-    try {
-      const tracks = await fetchTopCharts();
-      this.setState({ results: tracks });
-    } catch (error) {
-      console.error('Failed to load top charts:', error);
-    } finally {
-      this.setState({ isLoading: false });
-    }
-  }
+  searchTracks = async (query: string) => {
+    await searchTracks(this, query);
+  };
 
-  async searchTracks(query: string) {
-    this.setState({ isLoading: true, query, isSearching: true });
+  updateQuery = ({ query }: { query: string }) => {
+    handleSearch(this, query.trim());
+  };
 
-    setQueryToURL(query);
-
-    try {
-      const tracks = await fetchTracks(query);
-      saveSearch(query, tracks);
-      this.setState({ results: tracks });
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
-      this.setState({ isLoading: false });
-    }
-  }
-
-  handleSearch(query: string) {
-    const trimmed = query.trim();
-    if (trimmed) {
-      this.searchTracks(trimmed);
-    }
-  }
-
-  handleClearSearch() {
-    clearQueryFromURL();
-    clearSearch();
-    this.loadTopCharts();
-  }
-
-  updateQuery({ query }: { query: string }) {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      this.handleClearSearch();
-    } else {
-      this.handleSearch(trimmed);
-    }
-  }
-
-  throwError() {
+  throwError = () => {
     this.setState({ error: 'true' });
-  }
+  };
 
   render() {
     const { isLoading, results, isSearching, query, error } = this.state;
 
     if (error) {
-      throw new Error('OOOPS! Something went wrong');
+      throw new Error('Application Error: Something went wrong');
     }
 
     return (

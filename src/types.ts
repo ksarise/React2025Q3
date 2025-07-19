@@ -85,3 +85,7 @@ export interface MainContentProps {
   query: string;
   error: string | null;
 }
+export interface AppComponent extends React.Component<object, AppState> {
+  loadTopCharts: () => Promise<void>;
+  searchTracks: (query: string) => Promise<void>;
+}

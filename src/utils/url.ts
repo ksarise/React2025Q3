@@ -1,6 +1,6 @@
 export function getQueryFromURL(): string | null {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('search');
+  return urlParams.get('search') || '';
 }
 
 export function setQueryToURL(query: string) {

@@ -4,6 +4,7 @@ import SearchItem from './SearchItem/SearchItem.tsx';
 
 class SearchResults extends Component<SearchResultsProps> {
   render() {
+    console.log(this.props.tracks);
     return (
       <section className="container mx-auto py-3">
         <h1 className="font-medium text-lg">

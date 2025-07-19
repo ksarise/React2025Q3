@@ -7,7 +7,7 @@ export async function fetchTopCharts(): Promise<Track[]> {
   return addIndices(data);
 }
 
-export async function fetchTracks(query: string): Promise<Track[]> {
+export async function fetchSearchTracks(query: string): Promise<Track[]> {
   const data = await searchSong(query);
   return addIndices(data);
 }
