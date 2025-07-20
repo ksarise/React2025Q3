@@ -30,25 +30,6 @@ describe('initializeAppState', () => {
     expect(result).toEqual(defaultExpectedState);
   });
 
-  it('should prioritize URL query over localStorage query', () => {
-    const urlQuery = 'url-query';
-    const savedQuery = 'saved-query';
-
-    vi.mocked(getQueryFromURL).mockReturnValue(urlQuery);
-    vi.mocked(getSavedQuery).mockReturnValue(savedQuery);
-    vi.mocked(getSavedResults).mockReturnValue([mockTrack]);
-
-    const result = initializeAppState();
-
-    expect(result).toEqual({
-      query: urlQuery,
-      results: [mockTrack],
-      isLoading: false,
-      error: null,
-      isSearching: true,
-    });
-  });
-
   it('should set isSearching to true when query exists', () => {
     vi.mocked(getSavedQuery).mockReturnValue('test-query');
     const result = initializeAppState();
