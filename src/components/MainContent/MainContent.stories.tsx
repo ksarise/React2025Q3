@@ -2,65 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import MainContent from './MainContent.tsx';
 import { type Track, type ApiResponse } from '../../types.ts';
 import { addIndices } from '../../utils/utils';
-
+import { mockApiData } from '../../utils/mock/mockApiData.ts';
 type Story = StoryObj<typeof MainContent>;
 
-const mockApiResponse: ApiResponse = {
-  '@attr': {
-    page: '1',
-    pages: '1',
-    perPage: '2',
-    total: '2',
-  },
-  tracks: {
-    track: [
-      {
-        id: 1,
-        name: 'Bohemian Rhapsody',
-        duration: '355',
-        playcount: '1200000000',
-        listeners: '1200000000',
-        mbid: '123e4567-e89b-12d3-a456-426614174000',
-        url: 'https://www.last.fm/music/Queen/_/Bohemian+Rhapsody',
-        streamable: { '#text': '1', fulltrack: '0' },
-        artist: {
-          name: 'Queen',
-          mbid: '123e4567-e89b-12d3-a456-426614174001',
-          url: 'https://www.last.fm/music/Queen',
-        },
-        image: [
-          {
-            '#text':
-              'https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png',
-            size: 'small',
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: 'Stairway to Heaven',
-        duration: '482',
-        playcount: '800000000',
-        listeners: '800000000',
-        mbid: '123e4567-e89b-12d3-a456-426614174002',
-        url: 'https://www.last.fm/music/Led+Zeppelin/_/Stairway+to+Heaven',
-        streamable: { '#text': '1', fulltrack: '0' },
-        artist: {
-          name: 'Led Zeppelin',
-          mbid: '123e4567-e89b-12d3-a456-426614174003',
-          url: 'https://www.last.fm/music/Led+Zeppelin',
-        },
-        image: [
-          {
-            '#text':
-              'https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png',
-            size: 'small',
-          },
-        ],
-      },
-    ],
-  },
-};
+const mockApiResponse: ApiResponse = mockApiData;
 
 const mockTracks: Track[] = addIndices(mockApiResponse);
 
