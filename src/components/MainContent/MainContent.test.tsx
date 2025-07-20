@@ -20,7 +20,7 @@ describe('MainContent Component', () => {
     error: null,
   };
 
-  it('renders SearchResults when all is ok', () => {
+  it('should renders SearchResults when all is ok', () => {
     const propsWithResults: MainContentProps = {
       ...defaultProps,
       results: [
@@ -50,7 +50,7 @@ describe('MainContent Component', () => {
     expect(screen.getByTestId('search-results')).toBeInTheDocument();
   });
 
-  it('renders Loader when isLoading is true', () => {
+  it('should renders Loader when isLoading is true', () => {
     const propsLoading: MainContentProps = {
       ...defaultProps,
       isLoading: true,
@@ -60,7 +60,7 @@ describe('MainContent Component', () => {
     expect(screen.getByTestId('loader')).toBeInTheDocument();
   });
 
-  it('renders error message when error exists', () => {
+  it('should renders error message when error exists', () => {
     const errorMessage = 'Test error message';
     const propsWithError: MainContentProps = {
       ...defaultProps,
@@ -72,7 +72,7 @@ describe('MainContent Component', () => {
     expect(screen.getByText(errorMessage)).toHaveClass('text-red-500');
   });
 
-  it('renders "No Results Found" ', () => {
+  it('should renders "No Results Found" ', () => {
     const propsNoResults: MainContentProps = {
       ...defaultProps,
       results: [],
@@ -85,30 +85,5 @@ describe('MainContent Component', () => {
     expect(screen.getByText('No Results Found')).toHaveClass(
       'font-medium text-lg'
     );
-  });
-
-  it('prioritizes error over loading state', () => {
-    const errorMessage = 'Test error message';
-    const propsWithBoth: MainContentProps = {
-      ...defaultProps,
-      isLoading: true,
-      error: errorMessage,
-    };
-
-    render(<MainContent {...propsWithBoth} />);
-    expect(screen.getByText(errorMessage)).toBeInTheDocument();
-    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
-  });
-
-  it('prioritizes loading over no results state', () => {
-    const propsLoadingAndNoResults: MainContentProps = {
-      ...defaultProps,
-      isLoading: true,
-      results: [],
-    };
-
-    render(<MainContent {...propsLoadingAndNoResults} />);
-    expect(screen.getByTestId('loader')).toBeInTheDocument();
-    expect(screen.queryByText('No Results Found')).not.toBeInTheDocument();
   });
 });

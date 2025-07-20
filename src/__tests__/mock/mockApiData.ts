@@ -1,4 +1,4 @@
-import type { ApiResponse, Artist } from '../../types';
+import type { ApiResponse, Artist, Track } from '../../types';
 
 const mockApiData: ApiResponse = {
   '@attr': { page: '1', pages: '1', perPage: '2', total: '2' },
@@ -69,5 +69,26 @@ const mockApiSongSearchData: ApiResponse = {
     },
   },
 };
-
+export const mockApiTrack: Track = {
+  id: 1,
+  name: 'Bohemian Rhapsody',
+  duration: '355',
+  playcount: '1200000000',
+  listeners: '1200000000',
+  mbid: '123e4567-e89b-12d3-a456-426614174000',
+  url: 'https://www.last.fm/music/Queen/_/Bohemian+Rhapsody',
+  streamable: { '#text': '1', fulltrack: '0' },
+  artist: {
+    name: 'Queen',
+    mbid: '123e4567-e89b-12d3-a456-426614174001',
+    url: 'https://www.last.fm/music/Queen',
+  },
+  image: [
+    {
+      '#text':
+        'https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png',
+      size: 'small',
+    },
+  ],
+};
 export { mockApiSongSearchData };

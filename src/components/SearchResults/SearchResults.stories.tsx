@@ -1,6 +1,6 @@
 import SearchResults from './SearchResults.tsx';
 import { type Track } from '../../types.ts';
-import { mockApiData } from '../../utils/mock/mockApiData.ts';
+import { mockApiData } from '../../__tests__/mock/mockApiData.ts';
 const mockTracks: Track[] = mockApiData.tracks?.track ?? [];
 
 export default {

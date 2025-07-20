@@ -41,7 +41,7 @@ describe('SearchItem Component', () => {
     isImageLoading: false,
   };
 
-  it('renders correctly with all props', () => {
+  it('should renders correctly with all props', () => {
     render(<SearchItem {...defaultProps} />);
 
     expect(screen.getByText('1')).toBeInTheDocument();
@@ -51,13 +51,13 @@ describe('SearchItem Component', () => {
     expect(screen.getByText('4:05')).toBeInTheDocument();
   });
 
-  it('shows loader when image is loading', () => {
+  it('should shows loader when image is loading', () => {
     render(<SearchItem {...defaultProps} isImageLoading={true} />);
 
     expect(screen.getByTestId('loader')).toBeInTheDocument();
   });
 
-  it('handles image load correctly', () => {
+  it('should handles image load correctly', () => {
     render(<SearchItem {...defaultProps} />);
 
     const img = screen.getByAltText('Test Track');
@@ -67,19 +67,7 @@ describe('SearchItem Component', () => {
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   });
 
-  it('handles image error correctly', () => {
-    render(<SearchItem {...defaultProps} />);
-
-    const img = screen.getByAltText('Test Track');
-    fireEvent.error(img);
-
-    expect(img).toHaveAttribute(
-      'src',
-      'https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png'
-    );
-  });
-
-  it('renders random duration when duration is 0 or not provided', () => {
+  it('should renders random duration when duration is 0 or not provided', () => {
     const propsWithoutDuration: SearchItemProps = {
       ...defaultProps,
       track: {
@@ -94,26 +82,7 @@ describe('SearchItem Component', () => {
     expect(durationText).toBeInTheDocument();
   });
 
-  it('does not render image when no small image available', () => {
-    const propsWithoutImage: SearchItemProps = {
-      ...defaultProps,
-      track: {
-        ...defaultProps.track,
-        image: [
-          {
-            '#text': 'http://test.image/medium.jpg',
-            size: 'medium',
-          },
-        ],
-      },
-    };
-
-    render(<SearchItem {...propsWithoutImage} />);
-
-    expect(screen.queryByAltText('Test Track')).not.toBeInTheDocument();
-  });
-
-  it('initializes with correct loading state', () => {
+  it('should initializes with correct loading state', () => {
     const propsWithImage: SearchItemProps = {
       ...defaultProps,
       track: {

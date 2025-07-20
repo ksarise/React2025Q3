@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { addIndices } from './utils';
 import type { ApiResponse } from '../types';
-import { mockApiData, mockApiSongSearchData } from './mock/mockApiData';
+import {
+  mockApiData,
+  mockApiSongSearchData,
+} from '../__tests__/mock/mockApiData';
 
 describe('addIndices utility function', () => {
   describe('when processing chart data', () => {

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import MainContent from './MainContent.tsx';
 import { type Track, type ApiResponse } from '../../types.ts';
 import { addIndices } from '../../utils/utils';
-import { mockApiData } from '../../utils/mock/mockApiData.ts';
+import { mockApiData } from '../../__tests__/mock/mockApiData.ts';
 type Story = StoryObj<typeof MainContent>;
 
 const mockApiResponse: ApiResponse = mockApiData;

@@ -1,7 +1,7 @@
 import { type Track } from '../types';
 
-const LS_TERM_KEY = 'term';
-const LS_RESULTS_KEY = 'searchResults';
+export const LS_TERM_KEY = 'term';
+export const LS_RESULTS_KEY = 'searchResults';
 
 export function getSavedQuery(): string {
   return localStorage.getItem(LS_TERM_KEY) || '';
