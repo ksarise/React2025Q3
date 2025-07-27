@@ -1,103 +1,90 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  getSavedQuery,
-  getSavedResults,
-  saveSearch,
-  clearSearch,
-  LS_TERM_KEY,
-  LS_RESULTS_KEY,
-} from './localStorage';
-import { mockApiTrack } from '../__tests__/mock/mockApiData';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { saveSearchState, getSavedSearchState } from './localStorage';
 import { type Track } from '../types';
+import { mockApiTrack } from '../__tests__/mock/mockApiData';
+const LS_KEY = 'searchData';
 
-describe('localStorage utils', () => {
-  const mockTrack: Track = mockApiTrack;
+const localStorageMock = (() => {
+  let store: { [key: string]: string } = {};
 
-  const localStorageMock = (() => {
-    let store: Record<string, string> = {};
+  return {
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    getItem: vi.fn((key: string) => store[key]),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+  };
+})();
 
-    return {
-      getItem: vi.fn((key: string) => store[key] || null),
-      setItem: vi.fn((key: string, value: string) => {
-        store[key] = value.toString();
-      }),
-      removeItem: vi.fn((key: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete store[key];
-      }),
-      clear: vi.fn(() => {
-        store = {};
-      }),
+beforeEach(() => {
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+  });
+  localStorageMock.clear();
+  vi.clearAllMocks();
+});
+
+describe('saveSearchState and getSavedSearchState', () => {
+  const testTrack: Track = mockApiTrack;
+
+  it('should save the full search state to localStorage', () => {
+    saveSearchState('query', [testTrack], 2, 5, 100);
+
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      LS_KEY,
+      JSON.stringify({
+        query: 'query',
+        results: [testTrack],
+        page: 2,
+        totalPages: 5,
+        totalResults: 100,
+      })
+    );
+  });
+
+  it('should return default state if nothing saved', () => {
+    localStorageMock.getItem.mockRejectedValue(new Error('Item not found'));
+
+    const result = getSavedSearchState();
+
+    expect(result).toEqual({
+      query: '',
+      results: [],
+      page: 1,
+      totalPages: 1,
+      totalResults: 0,
+    });
+  });
+
+  it('should parse and return saved state', () => {
+    const savedState = {
+      query: 'saved',
+      results: [testTrack],
+      page: 3,
+      totalPages: 4,
+      totalResults: 20,
     };
-  })();
+    localStorageMock.getItem.mockReturnValue(JSON.stringify(savedState));
 
-  beforeEach(() => {
-    Object.defineProperty(window, 'localStorage', {
-      value: localStorageMock,
-      writable: true,
-    });
-    localStorageMock.clear();
+    const result = getSavedSearchState();
+
+    expect(result).toEqual(savedState);
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  it('should return default on invalid JSON', () => {
+    localStorageMock.getItem.mockReturnValue('not-json');
 
-  describe('getSavedQuery', () => {
-    it('should return empty string when no term saved', () => {
-      expect(getSavedQuery()).toBe('');
-      expect(localStorage.getItem).toHaveBeenCalledWith(LS_TERM_KEY);
-    });
+    const result = getSavedSearchState();
 
-    it('should return saved term', () => {
-      const testQuery = 'test query';
-      localStorage.setItem(LS_TERM_KEY, testQuery);
-      expect(getSavedQuery()).toBe(testQuery);
-    });
-  });
-
-  describe('getSavedResults', () => {
-    it('should return empty array when no results saved', () => {
-      expect(getSavedResults()).toEqual([]);
-      expect(localStorage.getItem).toHaveBeenCalledWith(LS_RESULTS_KEY);
-    });
-
-    it('should return parsed results when they exist', () => {
-      const testResults = [mockTrack];
-      localStorage.setItem(LS_RESULTS_KEY, JSON.stringify(testResults));
-      expect(getSavedResults()).toEqual(testResults);
-    });
-  });
-
-  describe('saveSearch', () => {
-    it('should save query and results to ls', () => {
-      const testQuery = 'test query';
-      const testResults = [mockTrack];
-
-      saveSearch(testQuery, testResults);
-
-      expect(localStorage.setItem).toHaveBeenCalledWith(LS_TERM_KEY, testQuery);
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        LS_RESULTS_KEY,
-        JSON.stringify(testResults)
-      );
-    });
-
-    it('should handle empty query and results', () => {
-      saveSearch('', []);
-
-      expect(localStorage.setItem).toHaveBeenCalledWith(LS_TERM_KEY, '');
-      expect(localStorage.setItem).toHaveBeenCalledWith(LS_RESULTS_KEY, '[]');
-    });
-  });
-
-  describe('clearSearch', () => {
-    it('should clear', () => {
-      localStorage.setItem(LS_TERM_KEY, 'test');
-      localStorage.setItem(LS_RESULTS_KEY, '[]');
-      clearSearch();
-      expect(localStorage.removeItem).toHaveBeenCalledWith(LS_TERM_KEY);
-      expect(localStorage.removeItem).toHaveBeenCalledWith(LS_RESULTS_KEY);
+    expect(result).toEqual({
+      query: '',
+      results: [],
+      page: 1,
+      totalPages: 1,
+      totalResults: 0,
     });
   });
 });

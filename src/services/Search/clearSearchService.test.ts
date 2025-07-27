@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleClearSearch } from './clearSearchService';
-import { clearQueryFromURL } from '../../utils/url';
-import { clearSearch } from '../../utils/localStorage';
+import { setSearchParamsToURL } from '../../utils/url';
 import { type AppComponent } from '../../types';
 
 vi.mock('../../utils/url');
@@ -19,8 +18,7 @@ describe('clearSearchService', () => {
   it('should clear URL, localStorage and load top charts', () => {
     handleClearSearch(mockApp);
 
-    expect(clearQueryFromURL).toHaveBeenCalled();
-    expect(clearSearch).toHaveBeenCalled();
+    expect(setSearchParamsToURL).toHaveBeenCalledWith('', 1);
     expect(mockApp.loadTopCharts).toHaveBeenCalled();
   });
 });

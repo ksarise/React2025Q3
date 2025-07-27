@@ -107,7 +107,7 @@ const App: React.FC = () => {
         }));
       }
     })();
-  }, [queryFromUrl, pageFromUrl]);
+  }, [queryFromUrl, pageFromUrl, saveSearchResults]);
 
   const onSearch = useCallback(
     ({ query: newQuery }: { query: string }) => {

@@ -1,127 +1,124 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import App from './App';
-import { type AppState } from './types';
-import appInitializer from './utils/appInitializer';
-import { handleSearch } from './services/Search/searchService';
-import { loadTopCharts, searchTracks } from './services/dataService';
-import { mockApiTrack } from './__tests__/mock/mockApiData';
-
-vi.mock('./utils/appInitializer');
-vi.mock('./services/Search/searchService');
-vi.mock('./services/dataService');
+import { getSavedSearchState } from './utils/localStorage';
+import * as dataService from './services/dataService';
+import type { SearchState } from './utils/localStorage';
 vi.mock('./components/Header/Header', () => ({
   default: () => <div>Header Mock</div>,
 }));
 vi.mock('./components/MainContent/MainContent', () => ({
   default: () => <div>MainContent Mock</div>,
 }));
-vi.mock('./error/ErrorButton', () => ({
-  default: ({ onClick }: { onClick: () => void }) => (
-    <button onClick={onClick}>ErrorButton Mock</button>
-  ),
+vi.mock('./components/Loader/Loader', () => ({
+  default: () => <div>Loader Mock</div>,
+}));
+vi.mock('./components/Pagination/Pagination', () => ({
+  default: () => <div>Pagination Mock</div>,
+}));
+vi.mock('./components/TrackDetails/TrackDetails', () => ({
+  default: () => <div>TrackDetails Mock</div>,
 }));
 
+vi.mock('./services/dataService');
+vi.mock('./services/Search/searchService');
+vi.mock('./utils/localStorage');
+
 describe('App Component', () => {
-  const mockInitialState: AppState = {
+  const initialLocalStorageState: SearchState = {
     query: '',
     results: [],
-    isLoading: false,
-    error: null,
-    isSearching: false,
+    page: 1,
+    totalPages: 1,
+    totalResults: 0,
   };
 
   beforeEach(() => {
-    vi.mocked(appInitializer).mockReturnValue(mockInitialState);
-    vi.mocked(handleSearch).mockImplementation(() => {});
-    vi.mocked(loadTopCharts).mockResolvedValue(undefined);
-    vi.mocked(searchTracks).mockResolvedValue(undefined);
+    vi.mocked(getSavedSearchState).mockReturnValue(initialLocalStorageState);
+    vi.mocked(dataService.handleSearch).mockResolvedValue({
+      tracks: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalResults: 0,
+        itemsPerPage: 10,
+      },
+    });
+    vi.mocked(dataService.handleClearSearch).mockResolvedValue({
+      tracks: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalResults: 0,
+        itemsPerPage: 10,
+      },
+    });
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should renders', () => {
-    render(<App />);
+  function renderWithRouter(initialEntries = ['/']) {
+    return render(
+      <MemoryRouter initialEntries={initialEntries}>
+        <Routes>
+          <Route path="/" element={<App />} />
+        </Routes>
+      </MemoryRouter>
+    );
+  }
+
+  it('should renders Header, MainContent, Pagination components', async () => {
+    renderWithRouter();
+
     expect(screen.getByText('Header Mock')).toBeInTheDocument();
-    expect(screen.getByText('MainContent Mock')).toBeInTheDocument();
-  });
-
-  describe('Initialization', () => {
-    it('should calls appInitializer on constructor', () => {
-      render(<App />);
-      expect(appInitializer).toHaveBeenCalled();
-    });
-
-    it('loads top charts on mount when no query exists', () => {
-      render(<App />);
-      expect(loadTopCharts).toHaveBeenCalled();
-    });
-
-    it('should searches tracks on mount when query exists', () => {
-      const query = 'test';
-      vi.mocked(appInitializer).mockReturnValue({
-        ...mockInitialState,
-        query,
-        results: [],
-      });
-
-      render(<App />);
-      expect(searchTracks).toHaveBeenCalledWith(expect.anything(), query);
-    });
-
-    it('should not search on mount when results already exist', () => {
-      vi.mocked(appInitializer).mockReturnValue({
-        ...mockInitialState,
-        query: 'test',
-        results: [mockApiTrack],
-      });
-
-      render(<App />);
-      expect(searchTracks).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('API Integration', () => {
-    it('should handles successful top charts load', async () => {
-      vi.mocked(loadTopCharts).mockImplementation(async (app) => {
-        app.setState({ results: [mockApiTrack] });
-      });
-
-      render(<App />);
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
+    await waitFor(() => {
       expect(screen.getByText('MainContent Mock')).toBeInTheDocument();
+      expect(screen.getByText('Pagination Mock')).toBeInTheDocument();
     });
   });
 
-  describe('State Management', () => {
-    it('should updates query state correctly', () => {
-      const query = 'new query';
-      const appInstance = new App({});
+  it('should calls handleSearch if search query exists in URL', async () => {
+    const query = 'test-query';
+    renderWithRouter([`/?search=${query}&page=2`]);
 
-      appInstance.updateQuery({ query });
-
-      expect(handleSearch).toHaveBeenCalledWith(appInstance, query.trim());
-    });
-  });
-
-  describe('Integration with child components', () => {
-    it('should passes correct props to Header', () => {
-      const query = 'initial query';
-      vi.mocked(appInitializer).mockReturnValue({
-        ...mockInitialState,
+    await waitFor(() => {
+      expect(dataService.handleSearch).toHaveBeenCalledWith(
         query,
-      });
-
-      render(<App />);
-      expect(screen.getByText('Header Mock')).toBeInTheDocument();
+        expect.any(Function),
+        2
+      );
     });
+  });
 
-    it('should passes correct props to MainContent', () => {
-      render(<App />);
-      expect(screen.getByText('MainContent Mock')).toBeInTheDocument();
+  it('should calls handleClearSearch if no search query in URL', async () => {
+    renderWithRouter(['/']);
+
+    await waitFor(() => {
+      expect(dataService.handleClearSearch).toHaveBeenCalledWith(
+        expect.any(Function),
+        1
+      );
     });
+  });
+
+  it('should displays TrackDetails if details param present in URL', async () => {
+    renderWithRouter(['/?details=someEncodedValue']);
+
+    await waitFor(() => {
+      expect(screen.getByText('TrackDetails Mock')).toBeInTheDocument();
+    });
+  });
+
+  it('should updates URL on search submission via Header', async () => {
+    renderWithRouter(['/']);
+    expect(screen.getByText('Header Mock')).toBeInTheDocument();
+  });
+
+  it('should handles page change via Pagination', async () => {
+    renderWithRouter(['/']);
+    expect(screen.getByText('Pagination Mock')).toBeInTheDocument();
   });
 });

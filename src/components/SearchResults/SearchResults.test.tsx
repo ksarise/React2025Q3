@@ -46,6 +46,7 @@ describe('SearchResults Component', () => {
     ],
     isSearching: false,
     searchQuery: '',
+    onItemClick: vi.fn(),
   };
 
   it('should renders correctly with default props', () => {

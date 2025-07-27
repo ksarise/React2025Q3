@@ -50,20 +50,22 @@ const TrackDetails = () => {
       >
         Close X
       </button>
-      <h2 className="text-xl font-bold mb-4">{detail.name}</h2>
-      <p>
+      <h2 data-testid="name" className="text-xl font-bold mb-4">
+        {detail.name}
+      </h2>
+      <p data-testid="artist">
         <strong>Artist:</strong> {detail.artist.name}
       </p>
-      <p>
+      <p data-testid="album">
         <strong>Album:</strong> {detail.album?.title || '—'}
       </p>
-      <p>
+      <p data-testid="published">
         <strong>Published:</strong> {detail.wiki?.published || '—'}
       </p>
-      <p>
+      <p data-testid="listeners">
         <strong>Listeners:</strong> {detail.listeners || '—'}
       </p>
-      <p>
+      <p data-testid="playcount">
         <strong>Playcount:</strong> {detail.playcount || '—'}
       </p>
     </div>

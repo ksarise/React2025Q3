@@ -18,6 +18,7 @@ describe('MainContent Component', () => {
     isSearching: false,
     query: '',
     error: null,
+    onItemClick: () => {},
   };
 
   it('should renders SearchResults when all is ok', () => {

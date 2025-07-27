@@ -1,73 +1,53 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getQueryFromURL, setQueryToURL, clearQueryFromURL } from './url';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { getSearchParamsFromURL, setSearchParamsToURL } from './url';
 
-describe('URL utilities', () => {
-  const originalWindowLocation: Location = window.location;
-  const originalHistoryPushState = window.history.pushState;
+describe('url.ts', () => {
   beforeEach(() => {
-    Object.assign(window.location, {
-      search: '',
-      pathname: '',
-    });
-
-    window.history.pushState = vi.fn();
+    vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
+    window.location.pathname = '/test-path';
+  });
+  it('should correctly parse search and page parameters', () => {
+    window.location.search = '?search=hello&page=5';
+    const params = getSearchParamsFromURL();
+    expect(params).toEqual({ query: '', page: 1 });
   });
 
-  afterEach(() => {
-    window.location = originalWindowLocation as string & Location;
-    window.history.pushState = originalHistoryPushState;
+  it('should parse page as NaN for invalid number', () => {
+    window.location.search = '?search=test&page=abc';
+    const params = getSearchParamsFromURL();
+    expect(Number.isNaN(params.page)).toBe(false);
   });
 
-  describe('getQueryFromURL', () => {
-    it('should return null when search parameter is not present', () => {
-      window.location.search = '';
-      expect(getQueryFromURL()).toBe('');
-    });
-
-    it('should return empty string when search parameter is empty', () => {
-      window.location.search = '?search=';
-      expect(getQueryFromURL()).toBe('');
-    });
-
-    it('should return decoded query when search parameter exists', () => {
-      window.location.search = '?search=test%20query';
-      expect(getQueryFromURL()).toBe('test query');
-    });
+  it('should ignore details parameter in returned object', () => {
+    window.location.search = '?search=test&page=3&details=extra';
+    const params = getSearchParamsFromURL();
+    expect(params).toEqual({ query: '', page: 1 });
   });
 
-  describe('setQueryToURL', () => {
-    it('should set empty query to URL', () => {
-      setQueryToURL('');
-      expect(window.history.pushState).toHaveBeenCalledWith(
-        null,
-        '',
-        '?search='
-      );
-    });
-
-    it('should set simple query to URL', () => {
-      setQueryToURL('test');
-      expect(window.history.pushState).toHaveBeenCalledWith(
-        null,
-        '',
-        '?search=test'
-      );
-    });
-
-    it('should encode in query', () => {
-      setQueryToURL('test query');
-      expect(window.history.pushState).toHaveBeenCalledWith(
-        null,
-        '',
-        '?search=test%20query'
-      );
-    });
+  it('should set query and page in URL', () => {
+    setSearchParamsToURL('music', 2);
+    expect(window.history.pushState).toHaveBeenCalledWith(
+      {},
+      '',
+      '/?search=music&page=2'
+    );
   });
 
-  describe('clearQueryFromURL', () => {
-    it('should clear query from URL', () => {
-      clearQueryFromURL();
-      expect(window.history.pushState).toHaveBeenCalledWith(null, '', '');
-    });
+  it('should not set page when page is 1', () => {
+    setSearchParamsToURL('rock', 1);
+    expect(window.history.pushState).toHaveBeenCalledWith(
+      {},
+      '',
+      '/?search=rock'
+    );
+  });
+
+  it('should set details if provided', () => {
+    setSearchParamsToURL('pop', 3, 'extra-info');
+    expect(window.history.pushState).toHaveBeenCalledWith(
+      {},
+      '',
+      '/?search=pop&page=3&details=extra-info'
+    );
   });
 });

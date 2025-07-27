@@ -2,7 +2,7 @@ import { type Track } from '../types';
 
 const LS_KEY = 'searchData';
 
-interface SearchState {
+export interface SearchState {
   query: string;
   results: Track[];
   page: number;

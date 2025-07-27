@@ -40,10 +40,9 @@ const SearchItem = ({ track }: SearchItemProps) => {
   };
 
   const handleClick = () => {
-    const detailId = encodeURIComponent(`${track.artist.name}___${track.name}`);
     const searchParams = new URLSearchParams(location.search);
-    searchParams.set('details', detailId);
-    navigate(`?${searchParams.toString()}`, { replace: false });
+    searchParams.set('details', `${track.artist.name}___${track.name}`);
+    navigate(`?${searchParams.toString()}`);
   };
 
   return (
