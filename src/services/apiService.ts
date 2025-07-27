@@ -1,4 +1,4 @@
-import { getCharts, searchSong } from '../api/api';
+import { getCharts, searchSong, getTrackInfo } from '../api/api';
 import { addIndices, extractPaginationData } from '../utils/utils';
 import { type Track, type ApiResponse } from '../types';
 
@@ -18,12 +18,13 @@ export async function fetchTopCharts(
   const data: ApiResponse = await getCharts(page);
   const pagination = extractPaginationData(data);
   const fullList = addIndices(data);
-  const start = (pagination.itemsPerPage || 10) * (page - 1);
-  const end = start + (pagination.itemsPerPage || 10);
-  const paginated = fullList.slice(start, end);
+  // костыль для порой ломающегося апи
+  // const start = (pagination.itemsPerPage || 10) * (page - 1);
+  // const end = start + (pagination.itemsPerPage || 10);
+  // const paginated = fullList.slice(start, end);
 
   return {
-    tracks: paginated,
+    tracks: fullList,
     pagination,
   };
 }
@@ -38,4 +39,7 @@ export async function fetchSearchTracks(
     tracks: addIndices(data),
     pagination: extractPaginationData(data),
   };
+}
+export async function fetchTrackInfo(artist: string, track: string) {
+  return await getTrackInfo(artist, track);
 }

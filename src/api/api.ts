@@ -17,3 +17,13 @@ export const searchSong = async (query: string, page: number = 1) => {
   }
   return response.json();
 };
+
+export const getTrackInfo = async (artist: string, track: string) => {
+  const response = await fetch(
+    `http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${import.meta.env.VITE_API_KEY}&artist=${artist}&track=${track}&format=json`
+  );
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
+  return response.json();
+};

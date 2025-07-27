@@ -1,5 +1,9 @@
-import { fetchTopCharts, fetchSearchTracks } from './apiService';
-import { type Track } from '../types';
+import {
+  fetchTopCharts,
+  fetchSearchTracks,
+  fetchTrackInfo,
+} from './apiService';
+import type { Track, TrackDetails } from '../types';
 
 export async function handleSearch(
   query: string,
@@ -48,4 +52,20 @@ export async function handleClearSearch(
     pagination.totalResults
   );
   return { tracks, pagination };
+}
+
+export async function handleTrackInfo(
+  artist: string,
+  track: string
+): Promise<TrackDetails> {
+  const data = await fetchTrackInfo(artist, track);
+  return {
+    name: data.name,
+    artist: { name: data.track.artist.name },
+    album: { title: data.track.album.title },
+    wiki: { published: data.track.wiki?.published },
+    listeners: data.track.listeners,
+    playcount: data.track.playcount,
+    duration: data.track.duration,
+  };
 }

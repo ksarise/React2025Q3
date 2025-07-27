@@ -1,6 +1,6 @@
 import SearchResults from '../SearchResults/SearchResults';
 import Loader from '../Loader/Loader';
-import { type MainContentProps } from '../../types';
+import { type MainContentProps, type Track } from '../../types';
 
 const MainContent = ({
   isLoading,
@@ -8,6 +8,7 @@ const MainContent = ({
   isSearching,
   query,
   error,
+  onItemClick,
 }: MainContentProps) => {
   if (error) {
     return <div className="text-red-500">{error}</div>;
@@ -26,6 +27,7 @@ const MainContent = ({
       tracks={results}
       isSearching={isSearching}
       searchQuery={query}
+      onItemClick={(track: Track) => onItemClick(track)}
     />
   );
 };

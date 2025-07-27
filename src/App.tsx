@@ -1,33 +1,39 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Header from './components/Header/Header';
 import MainContent from './components/MainContent/MainContent';
 import Pagination from './components/Pagination/Pagination';
+import Loader from './components/Loader/Loader';
 import type { AppState, Track } from './types';
 import { getSavedSearchState } from './utils/localStorage';
-import { getSearchParamsFromURL, setSearchParamsToURL } from './utils/url';
 import useLocalStorage from './hooks/useLocalStorage';
 import { handleSearch, handleClearSearch } from './services/dataService';
+import TrackDetails from './components/TrackDetails/TrackDetails';
 
 const App: React.FC = () => {
-  const initialSearchData = useMemo(() => getSavedSearchState(), []);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [, setSavedSearch] = useLocalStorage<{
-    query: string;
-    page: number;
-    totalPages: number;
-    results: Track[];
-  }>('searchData', initialSearchData);
+  const urlSearchParams = new URLSearchParams(location.search);
+  const queryFromUrl = urlSearchParams.get('search') ?? '';
+  const pageFromUrl = parseInt(urlSearchParams.get('page') ?? '1', 10);
+  const detailEncodedFromUrl = urlSearchParams.get('details');
+  const initialLocalStorageState = useMemo(() => getSavedSearchState(), []);
+  const [, setSavedSearchToLocalStorage] = useLocalStorage(
+    'searchData',
+    initialLocalStorageState
+  );
 
   const [appState, setAppState] = useState<AppState>({
     isLoading: false,
-    results: initialSearchData.results || [],
-    isSearching: initialSearchData.query !== '',
-    query: initialSearchData.query || '',
+    results: initialLocalStorageState.results,
+    isSearching: initialLocalStorageState.query !== '',
+    query: initialLocalStorageState.query,
     error: null,
-    currentPage: initialSearchData.page || 1,
-    totalPages: initialSearchData.totalPages || 1,
-    totalResults: initialSearchData.results?.length || 0,
+    currentPage: pageFromUrl,
+    totalPages: initialLocalStorageState.totalPages,
+    totalResults: initialLocalStorageState.totalResults,
     itemsPerPage: 10,
   });
 
@@ -41,176 +47,144 @@ const App: React.FC = () => {
     totalPages,
   } = appState;
 
-  const saveSearchState = useCallback(
+  const saveSearchResults = useCallback(
     (
-      q: string,
+      searchQuery: string,
       tracks: Track[],
-      page: number,
-      totalPagesCount: number,
-      totalResultsCount: number
+      pageNumber: number,
+      pageCount: number,
+      totalCount: number
     ) => {
-      setSavedSearch({
-        query: q,
+      setSavedSearchToLocalStorage({
+        query: searchQuery,
         results: tracks,
-        page,
-        totalPages: totalPagesCount,
+        page: pageNumber,
+        totalPages: pageCount,
+        totalResults: totalCount,
       });
 
-      setAppState((prev) => ({
-        ...prev,
-        currentPage: page,
-        totalPages: totalPagesCount,
-        totalResults: totalResultsCount,
+      setAppState((previousState) => ({
+        ...previousState,
+        currentPage: pageNumber,
+        totalPages: pageCount,
+        totalResults: totalCount,
       }));
     },
-    [setSavedSearch]
+    [setSavedSearchToLocalStorage]
   );
-  useEffect(() => {
-    const { query, page } = getSearchParamsFromURL();
-    (async () => {
-      if (query) {
-        await executeSearchTracks(query, page);
-      } else {
-        await executeLoadTopCharts(page);
-      }
-    })();
-  }, []);
 
-  const executeLoadTopCharts = useCallback(
-    async (page: number) => {
-      setAppState((prev) => ({
-        ...prev,
+  useEffect(() => {
+    (async () => {
+      setAppState((previousState) => ({
+        ...previousState,
         isLoading: true,
-        isSearching: false,
+        isSearching: previousState.query !== '',
         error: null,
       }));
-      try {
-        const { tracks, pagination } = await handleClearSearch(
-          saveSearchState,
-          page
+
+      if (queryFromUrl) {
+        const { tracks } = await handleSearch(
+          queryFromUrl,
+          saveSearchResults,
+          pageFromUrl
         );
-        saveSearchState(
-          '',
-          tracks,
-          page,
-          pagination.totalPages,
-          pagination.totalResults
+        setAppState((previousState) => ({
+          ...previousState,
+          results: tracks,
+          query: queryFromUrl,
+          isLoading: false,
+        }));
+      } else {
+        const { tracks } = await handleClearSearch(
+          saveSearchResults,
+          pageFromUrl
         );
-        console.log('load top charts — page:', page, 'tracks:', tracks.length);
-        setSearchParamsToURL('', page);
-        setAppState((prev) => ({
-          ...prev,
+        setAppState((previousState) => ({
+          ...previousState,
           results: tracks,
           query: '',
           isLoading: false,
         }));
-      } catch (err) {
-        setAppState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: (err as Error).message,
-        }));
       }
+    })();
+  }, [queryFromUrl, pageFromUrl]);
+
+  const onSearch = useCallback(
+    ({ query: newQuery }: { query: string }) => {
+      const trimmedQuery = newQuery.trim();
+      const searchParams = new URLSearchParams();
+
+      if (trimmedQuery) {
+        searchParams.set('search', trimmedQuery);
+      }
+
+      searchParams.set('page', '1');
+      navigate({ pathname: '/', search: searchParams.toString() });
     },
-    [saveSearchState]
+    [navigate]
   );
 
-  const executeSearchTracks = useCallback(
-    async (searchQuery: string, page: number = 1) => {
-      setAppState((prev) => ({
-        ...prev,
-        isLoading: true,
-        isSearching: true,
-        error: null,
-      }));
-      try {
-        const { tracks } = await handleSearch(
-          searchQuery,
-          saveSearchState,
-          page
-        );
-        setSearchParamsToURL(searchQuery, page);
-        setAppState((prev) => ({
-          ...prev,
-          results: tracks,
-          query: searchQuery,
-          isLoading: false,
-        }));
-      } catch (err) {
-        setAppState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: (err as Error).message,
-        }));
-      }
+  const onPageChange = useCallback(
+    (nextPage: number) => {
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set('page', nextPage.toString());
+      navigate({ pathname: '/', search: searchParams.toString() });
     },
-    [saveSearchState]
+    [navigate, location.search]
   );
 
-  const updateQuery = useCallback(
-    ({ query: newQ }: { query: string }) => {
-      const trimmed = newQ.trim();
-      if (trimmed) {
-        executeSearchTracks(trimmed, 1);
-      } else {
-        executeLoadTopCharts(1);
-      }
-    },
-    [executeSearchTracks, executeLoadTopCharts]
-  );
-
-  const handlePrev = useCallback(() => {
+  const onPreviousPage = useCallback(() => {
     if (currentPage > 1) {
-      if (query === '') {
-        executeLoadTopCharts(currentPage - 1);
-      } else {
-        executeSearchTracks(query, currentPage - 1);
-      }
+      onPageChange(currentPage - 1);
     }
-  }, [currentPage, query, executeSearchTracks, executeLoadTopCharts]);
+  }, [currentPage, onPageChange]);
 
-  const handleNext = useCallback(() => {
+  const onNextPage = useCallback(() => {
     if (currentPage < totalPages) {
-      if (query === '') {
-        executeLoadTopCharts(currentPage + 1);
-      } else {
-        executeSearchTracks(query, currentPage + 1);
-      }
+      onPageChange(currentPage + 1);
     }
-  }, [
-    currentPage,
-    totalPages,
-    query,
-    executeSearchTracks,
-    executeLoadTopCharts,
-  ]);
+  }, [currentPage, totalPages, onPageChange]);
 
-  if (error) {
-    throw new Error('Application Error: Something went wrong');
-  }
+  const onSelectTrack = useCallback(
+    (track: Track) => {
+      const encodedTrackId = encodeURIComponent(
+        `${track.artist.name}___${track.name}`
+      );
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set('details', encodedTrackId);
+      navigate({ pathname: '/', search: searchParams.toString() });
+    },
+    [navigate, location.search]
+  );
 
   return (
-    <div className="min-h-[90vh] bg-gray-900 text-white min-w-[800px]">
-      <Header onQuery={updateQuery} initialQuery={query} />
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+    <div className="flex min-h-[90vh] bg-gray-900 text-white">
+      <div className={detailEncodedFromUrl ? 'w-2/3 p-4' : 'w-full p-4'}>
+        <Header onQuery={onSearch} initialQuery={query} />
+        {isLoading ? (
+          <Loader />
+        ) : (
           <MainContent
             isLoading={isLoading}
             results={results}
             isSearching={isSearching}
             query={query}
             error={error}
-          />
-        </div>
-        {!isLoading && totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPrev={handlePrev}
-            onNext={handleNext}
+            onItemClick={onSelectTrack}
           />
         )}
-      </main>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPrev={onPreviousPage}
+          onNext={onNextPage}
+        />
+      </div>
+      {detailEncodedFromUrl && (
+        <div className="w-1/3 border-l border-gray-800 p-4">
+          <TrackDetails />
+        </div>
+      )}
     </div>
   );
 };

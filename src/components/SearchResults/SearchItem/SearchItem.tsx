@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { type SearchItemProps } from '../../../types';
 import Loader from '../../Loader/Loader';
 
 const SearchItem = ({ track }: SearchItemProps) => {
+  const navigate = useNavigate();
+
   const smallImage = track.image.find((img) => img.size === 'small');
   const hasImage = smallImage && smallImage['#text'];
 
@@ -19,6 +22,7 @@ const SearchItem = ({ track }: SearchItemProps) => {
       'https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png';
     setIsImageLoading(false);
   };
+
   const formatedSongDuration = () => {
     if (track.duration && track.duration !== '0') {
       const totalSeconds = parseInt(track.duration);
@@ -35,8 +39,18 @@ const SearchItem = ({ track }: SearchItemProps) => {
     }
   };
 
+  const handleClick = () => {
+    const detailId = encodeURIComponent(`${track.artist.name}___${track.name}`);
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('details', detailId);
+    navigate(`?${searchParams.toString()}`, { replace: false });
+  };
+
   return (
-    <div className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-gray-750 transition-colors">
+    <div
+      onClick={handleClick}
+      className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-gray-750 transition-colors cursor-pointer"
+    >
       <div className="col-span-1 text-gray-400 font-medium">{track.id}</div>
       <div className="col-span-5 flex items-center">
         {hasImage ? (

@@ -1,7 +1,11 @@
 import { type SearchResultsProps } from '../../types';
 import SearchItem from './SearchItem/SearchItem';
 
-const SearchResults = ({ tracks, isSearching }: SearchResultsProps) => {
+const SearchResults = ({
+  tracks,
+  isSearching,
+  onItemClick,
+}: SearchResultsProps) => {
   return (
     <section className="container mx-auto py-3">
       <h1 className="font-medium text-lg">
@@ -16,7 +20,12 @@ const SearchResults = ({ tracks, isSearching }: SearchResultsProps) => {
       </div>
       <div className="divide-y divide-gray-700 w-full">
         {tracks.map((item) => (
-          <SearchItem key={item.id} track={item} isImageLoading={false} />
+          <SearchItem
+            key={item.id}
+            track={item}
+            isImageLoading={false}
+            onClick={() => onItemClick(item)}
+          />
         ))}
       </div>
     </section>
