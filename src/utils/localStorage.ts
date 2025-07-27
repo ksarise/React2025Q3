@@ -1,23 +1,38 @@
 import { type Track } from '../types';
 
-export const LS_TERM_KEY = 'term';
-export const LS_RESULTS_KEY = 'searchResults';
+const LS_KEY = 'searchData';
 
-export function getSavedQuery(): string {
-  return localStorage.getItem(LS_TERM_KEY) || '';
+interface SearchState {
+  query: string;
+  results: Track[];
+  page: number;
+  totalPages: number;
+  totalResults: number;
 }
 
-export function getSavedResults(): Track[] {
-  const raw = localStorage.getItem(LS_RESULTS_KEY);
-  return raw ? JSON.parse(raw) : [];
+export function saveSearchState(
+  query: string,
+  results: Track[],
+  page: number,
+  totalPages: number,
+  totalResults: number
+) {
+  const data: SearchState = { query, results, page, totalPages, totalResults };
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
 }
 
-export function saveSearch(query: string, results: Track[]) {
-  localStorage.setItem(LS_TERM_KEY, query);
-  localStorage.setItem(LS_RESULTS_KEY, JSON.stringify(results));
-}
-
-export function clearSearch() {
-  localStorage.removeItem(LS_TERM_KEY);
-  localStorage.removeItem(LS_RESULTS_KEY);
+export function getSavedSearchState(): SearchState {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) throw new Error();
+    return JSON.parse(raw) as SearchState;
+  } catch {
+    return {
+      query: '',
+      results: [],
+      page: 1,
+      totalPages: 1,
+      totalResults: 0,
+    };
+  }
 }

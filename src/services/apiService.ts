@@ -1,13 +1,41 @@
 import { getCharts, searchSong } from '../api/api';
-import { addIndices } from '../utils/utils';
-import { type Track } from '../types';
+import { addIndices, extractPaginationData } from '../utils/utils';
+import { type Track, type ApiResponse } from '../types';
 
-export async function fetchTopCharts(): Promise<Track[]> {
-  const data = await getCharts();
-  return addIndices(data);
+interface ApiServiceResponse {
+  tracks: Track[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalResults: number;
+    itemsPerPage: number;
+  };
 }
 
-export async function fetchSearchTracks(query: string): Promise<Track[]> {
-  const data = await searchSong(query);
-  return addIndices(data);
+export async function fetchTopCharts(
+  page: number
+): Promise<ApiServiceResponse> {
+  const data: ApiResponse = await getCharts(page);
+  const pagination = extractPaginationData(data);
+  const fullList = addIndices(data);
+  const start = (pagination.itemsPerPage || 10) * (page - 1);
+  const end = start + (pagination.itemsPerPage || 10);
+  const paginated = fullList.slice(start, end);
+
+  return {
+    tracks: paginated,
+    pagination,
+  };
+}
+
+export async function fetchSearchTracks(
+  query: string,
+  page: number
+): Promise<ApiServiceResponse> {
+  const data: ApiResponse = await searchSong(query, page);
+
+  return {
+    tracks: addIndices(data),
+    pagination: extractPaginationData(data),
+  };
 }

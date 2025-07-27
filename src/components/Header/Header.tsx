@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 const Header = (props: HeaderProps) => {
   const location = useLocation();
   return (
-    <header className="bg-black py-4 px-6 flex items-center justify-between border-b border-gray-800">
+    <header className="bg-black py-4 px-6 flex items-center justify-between border-b border-gray-800 ">
       <nav className=" md:flex space-x-4 flex items-center ">
         <Link
           to="/"

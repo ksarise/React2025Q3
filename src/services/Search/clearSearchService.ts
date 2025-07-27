@@ -1,9 +1,7 @@
 import { type AppComponent } from '../../types';
-import { clearQueryFromURL } from '../../utils/url';
-import { clearSearch } from '../../utils/localStorage';
+import { setSearchParamsToURL } from '../../utils/url';
 
 export function handleClearSearch(app: AppComponent) {
-  clearQueryFromURL();
-  clearSearch();
+  setSearchParamsToURL('', 1);
   app.loadTopCharts();
 }

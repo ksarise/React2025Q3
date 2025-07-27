@@ -1,30 +1,51 @@
-import { setQueryToURL, clearQueryFromURL } from '../utils/url';
 import { fetchTopCharts, fetchSearchTracks } from './apiService';
 import { type Track } from '../types';
 
 export async function handleSearch(
   query: string,
-  saveSearch: (query: string, tracks: Track[]) => void
+  saveSearch: (
+    query: string,
+    tracks: Track[],
+    page: number,
+    totalPages: number,
+    totalResults: number
+  ) => void,
+  page: number
 ) {
-  const trimmedQuery = query.trim();
-
-  if (!trimmedQuery) {
-    return handleClearSearch(saveSearch);
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return handleClearSearch(saveSearch, page);
   }
+  const { tracks, pagination } = await fetchSearchTracks(trimmed, page);
+  saveSearch(
+    trimmed,
+    tracks,
+    pagination.currentPage,
+    pagination.totalPages,
+    pagination.totalResults
+  );
 
-  setQueryToURL(trimmedQuery);
-  const tracks = await fetchSearchTracks(trimmedQuery);
-  saveSearch(trimmedQuery, tracks);
-  return tracks;
+  return { tracks, pagination };
 }
 
 export async function handleClearSearch(
-  saveSearch: (query: string, tracks: Track[]) => void
+  saveSearch: (
+    query: string,
+    tracks: Track[],
+    page: number,
+    totalPages: number,
+    totalResults: number
+  ) => void,
+  page: number
 ) {
-  clearQueryFromURL();
+  const { tracks, pagination } = await fetchTopCharts(page);
 
-  const tracks = await fetchTopCharts();
-  saveSearch('', tracks);
-
-  return tracks;
+  saveSearch(
+    '',
+    tracks,
+    pagination.currentPage,
+    pagination.totalPages,
+    pagination.totalResults
+  );
+  return { tracks, pagination };
 }

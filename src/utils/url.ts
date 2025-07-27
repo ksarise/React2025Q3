@@ -1,12 +1,15 @@
-export function getQueryFromURL(): string | null {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('search') || '';
+export function getSearchParamsFromURL(): { query: string; page: number } {
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get('search') || '';
+  const page = parseInt(params.get('page') || '1', 10);
+  return { query, page };
 }
 
-export function setQueryToURL(query: string) {
-  window.history.pushState(null, '', `?search=${encodeURIComponent(query)}`);
-}
+export function setSearchParamsToURL(query: string, page: number = 1) {
+  const params = new URLSearchParams();
+  if (query) params.set('search', query);
+  if (page > 1) params.set('page', String(page));
 
-export function clearQueryFromURL() {
-  window.history.pushState(null, '', window.location.pathname);
+  const newUrl = `${window.location.pathname}?${params.toString()}`;
+  window.history.pushState({}, '', newUrl);
 }

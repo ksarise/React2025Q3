@@ -1,19 +1,23 @@
 import { type AppState } from '../types';
-import { getQueryFromURL } from './url';
+import { getSearchParamsFromURL } from './url';
+import { getSavedSearchState } from './localStorage';
 
 export default function initializeAppState(): AppState {
-  const urlQuery = getQueryFromURL();
-  const isSearching = !!urlQuery;
+  const saved = getSavedSearchState();
+  const urlQuery = getSearchParamsFromURL().query ?? '';
+  const urlPage = getSearchParamsFromURL().page ?? saved.page;
+
+  const isSearching = urlQuery !== '';
 
   return {
-    query: urlQuery || '',
+    query: urlQuery,
     results: [],
     isLoading: false,
     error: null,
     isSearching,
+    currentPage: urlPage,
+    totalPages: saved.totalPages,
+    totalResults: saved.results.length,
+    itemsPerPage: 10,
   };
 }
-export const DEFAULT_SEARCH_STATE = {
-  query: '',
-  results: [],
-};

@@ -1,94 +1,146 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './App.css';
 import Header from './components/Header/Header';
 import MainContent from './components/MainContent/MainContent';
-import { type AppState, type Track } from './types';
-import initializeAppState, {
-  DEFAULT_SEARCH_STATE,
-} from './utils/appInitializer';
-import { handleSearch, handleClearSearch } from './services/dataService';
+import Pagination from './components/Pagination/Pagination';
+import type { AppState, Track } from './types';
+import { getSavedSearchState } from './utils/localStorage';
+import { getSearchParamsFromURL, setSearchParamsToURL } from './utils/url';
 import useLocalStorage from './hooks/useLocalStorage';
+import { handleSearch, handleClearSearch } from './services/dataService';
 
-const App = () => {
-  const [appState, setAppState] = useState<AppState>(initializeAppState());
-  const { isLoading, results, isSearching, query, error } = appState;
-  const [savedSearch, setSavedSearch] = useLocalStorage<{
+const App: React.FC = () => {
+  const initialSearchData = useMemo(() => getSavedSearchState(), []);
+
+  const [, setSavedSearch] = useLocalStorage<{
     query: string;
+    page: number;
+    totalPages: number;
     results: Track[];
-  }>('searchData', DEFAULT_SEARCH_STATE);
+  }>('searchData', initialSearchData);
+
+  const [appState, setAppState] = useState<AppState>({
+    isLoading: false,
+    results: initialSearchData.results || [],
+    isSearching: initialSearchData.query !== '',
+    query: initialSearchData.query || '',
+    error: null,
+    currentPage: initialSearchData.page || 1,
+    totalPages: initialSearchData.totalPages || 1,
+    totalResults: initialSearchData.results?.length || 0,
+    itemsPerPage: 10,
+  });
+
+  const {
+    isLoading,
+    results,
+    isSearching,
+    query,
+    error,
+    currentPage,
+    totalPages,
+  } = appState;
 
   const saveSearchState = useCallback(
-    (currentQuery: string, currentResults: Track[]) => {
+    (
+      q: string,
+      tracks: Track[],
+      page: number,
+      totalPagesCount: number,
+      totalResultsCount: number
+    ) => {
       setSavedSearch({
-        query: currentQuery,
-        results: currentResults,
+        query: q,
+        results: tracks,
+        page,
+        totalPages: totalPagesCount,
       });
+
+      setAppState((prev) => ({
+        ...prev,
+        currentPage: page,
+        totalPages: totalPagesCount,
+        totalResults: totalResultsCount,
+      }));
     },
     [setSavedSearch]
   );
-
   useEffect(() => {
-    const loadInitialData = async () => {
-      if (
-        savedSearch &&
-        savedSearch.results.length > 0 &&
-        savedSearch.query === query
-      ) {
-        setAppState((prev) => ({
-          ...prev,
-          results: savedSearch.results,
-          isLoading: false,
-          isSearching: !!savedSearch.query,
-        }));
-      } else if (query && results.length === 0) {
-        await executeSearchTracks(query);
+    const { query, page } = getSearchParamsFromURL();
+    (async () => {
+      if (query) {
+        await executeSearchTracks(query, page);
       } else {
-        await executeLoadTopCharts();
+        await executeLoadTopCharts(page);
       }
-    };
-
-    loadInitialData();
+    })();
   }, []);
 
-  const executeLoadTopCharts = useCallback(async () => {
-    try {
-      setAppState((prev) => ({ ...prev, isLoading: true, isSearching: false }));
-      const tracks = await handleClearSearch(saveSearchState);
-
+  const executeLoadTopCharts = useCallback(
+    async (page: number) => {
       setAppState((prev) => ({
         ...prev,
-        results: tracks,
-        isLoading: false,
-        query: '',
+        isLoading: true,
+        isSearching: false,
+        error: null,
       }));
-    } catch (error) {
-      setAppState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: (error as Error).message,
-      }));
-    }
-  }, [saveSearchState]);
-
-  const executeSearchTracks = useCallback(
-    async (searchQuery: string) => {
       try {
-        setAppState((prev) => ({ ...prev, isLoading: true }));
-
-        const tracks = await handleSearch(searchQuery, saveSearchState);
-
+        const { tracks, pagination } = await handleClearSearch(
+          saveSearchState,
+          page
+        );
+        saveSearchState(
+          '',
+          tracks,
+          page,
+          pagination.totalPages,
+          pagination.totalResults
+        );
+        console.log('load top charts — page:', page, 'tracks:', tracks.length);
+        setSearchParamsToURL('', page);
         setAppState((prev) => ({
           ...prev,
           results: tracks,
+          query: '',
           isLoading: false,
-          isSearching: true,
-          query: searchQuery,
         }));
-      } catch (error) {
+      } catch (err) {
         setAppState((prev) => ({
           ...prev,
           isLoading: false,
-          error: (error as Error).message,
+          error: (err as Error).message,
+        }));
+      }
+    },
+    [saveSearchState]
+  );
+
+  const executeSearchTracks = useCallback(
+    async (searchQuery: string, page: number = 1) => {
+      setAppState((prev) => ({
+        ...prev,
+        isLoading: true,
+        isSearching: true,
+        error: null,
+      }));
+      try {
+        const { tracks } = await handleSearch(
+          searchQuery,
+          saveSearchState,
+          page
+        );
+        setSearchParamsToURL(searchQuery, page);
+        setAppState((prev) => ({
+          ...prev,
+          results: tracks,
+          query: searchQuery,
+          isLoading: false,
+        }));
+      } catch (err) {
+        setAppState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: (err as Error).message,
         }));
       }
     },
@@ -96,15 +148,42 @@ const App = () => {
   );
 
   const updateQuery = useCallback(
-    ({ query }: { query: string }) => {
-      const trimmedQuery = query.trim();
-      const funcToCall = trimmedQuery
-        ? executeSearchTracks
-        : executeLoadTopCharts;
-      funcToCall(trimmedQuery);
+    ({ query: newQ }: { query: string }) => {
+      const trimmed = newQ.trim();
+      if (trimmed) {
+        executeSearchTracks(trimmed, 1);
+      } else {
+        executeLoadTopCharts(1);
+      }
     },
-    [executeLoadTopCharts, executeSearchTracks]
+    [executeSearchTracks, executeLoadTopCharts]
   );
+
+  const handlePrev = useCallback(() => {
+    if (currentPage > 1) {
+      if (query === '') {
+        executeLoadTopCharts(currentPage - 1);
+      } else {
+        executeSearchTracks(query, currentPage - 1);
+      }
+    }
+  }, [currentPage, query, executeSearchTracks, executeLoadTopCharts]);
+
+  const handleNext = useCallback(() => {
+    if (currentPage < totalPages) {
+      if (query === '') {
+        executeLoadTopCharts(currentPage + 1);
+      } else {
+        executeSearchTracks(query, currentPage + 1);
+      }
+    }
+  }, [
+    currentPage,
+    totalPages,
+    query,
+    executeSearchTracks,
+    executeLoadTopCharts,
+  ]);
 
   if (error) {
     throw new Error('Application Error: Something went wrong');
@@ -123,6 +202,14 @@ const App = () => {
             error={error}
           />
         </div>
+        {!isLoading && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPrev={handlePrev}
+            onNext={handleNext}
+          />
+        )}
       </main>
     </div>
   );

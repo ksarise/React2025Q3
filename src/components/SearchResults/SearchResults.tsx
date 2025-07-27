@@ -2,7 +2,6 @@ import { type SearchResultsProps } from '../../types';
 import SearchItem from './SearchItem/SearchItem';
 
 const SearchResults = ({ tracks, isSearching }: SearchResultsProps) => {
-  console.log(tracks);
   return (
     <section className="container mx-auto py-3">
       <h1 className="font-medium text-lg">

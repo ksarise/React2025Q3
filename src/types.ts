@@ -27,16 +27,23 @@ export interface Track {
   id: number;
 }
 export interface ApiResponse {
-  '@attr': {
-    page: string;
-    pages: string;
-    perPage: string;
-    total: string;
-  };
   tracks?: {
     track: Track[];
+    '@attr': {
+      page: string;
+      totalPages: string;
+      perPage: string;
+      total: string;
+    };
   };
   results?: {
+    'opensearch:totalResults': string;
+    'opensearch:itemsPerPage': string;
+    'opensearch:Query': {
+      '@role': string;
+      '#text': string;
+      startPage: string;
+    };
     trackmatches: {
       track: TrackSearchResult[];
     };
@@ -66,6 +73,10 @@ export type AppState = {
   isLoading: boolean;
   error: string | null;
   isSearching: boolean;
+  currentPage: number;
+  totalPages: number;
+  totalResults?: number;
+  itemsPerPage: number;
 };
 export type SearchProps = {
   onQuery: (arg0: { query: string }) => void;
