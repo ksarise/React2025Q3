@@ -2,21 +2,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getQueryFromURL, setQueryToURL, clearQueryFromURL } from './url';
 
 describe('URL utilities', () => {
-  const originalWindowLocation = window.location;
+  const originalWindowLocation: Location = window.location;
   const originalHistoryPushState = window.history.pushState;
-
   beforeEach(() => {
-    window.location = {
-      ...originalWindowLocation,
+    Object.assign(window.location, {
       search: '',
       pathname: '',
-    };
+    });
 
     window.history.pushState = vi.fn();
   });
 
   afterEach(() => {
-    window.location = originalWindowLocation;
+    window.location = originalWindowLocation as string & Location;
     window.history.pushState = originalHistoryPushState;
   });
 
