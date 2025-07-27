@@ -1,20 +1,30 @@
 import { setQueryToURL, clearQueryFromURL } from '../utils/url';
-import { saveSearch, clearSearch } from '../utils/localStorage';
 import { fetchTopCharts, fetchSearchTracks } from './apiService';
+import { type Track } from '../types';
 
-export async function handleSearch(query: string) {
-  if (!query.trim()) {
-    return handleClearSearch();
+export async function handleSearch(
+  query: string,
+  saveSearch: (query: string, tracks: Track[]) => void
+) {
+  const trimmedQuery = query.trim();
+
+  if (!trimmedQuery) {
+    return handleClearSearch(saveSearch);
   }
 
-  setQueryToURL(query);
-  const tracks = await fetchSearchTracks(query);
-  saveSearch(query, tracks);
+  setQueryToURL(trimmedQuery);
+  const tracks = await fetchSearchTracks(trimmedQuery);
+  saveSearch(trimmedQuery, tracks);
   return tracks;
 }
 
-export async function handleClearSearch() {
+export async function handleClearSearch(
+  saveSearch: (query: string, tracks: Track[]) => void
+) {
   clearQueryFromURL();
-  clearSearch();
-  return await fetchTopCharts();
+
+  const tracks = await fetchTopCharts();
+  saveSearch('', tracks);
+
+  return tracks;
 }

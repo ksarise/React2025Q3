@@ -2,18 +2,59 @@ import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Header from './components/Header/Header';
 import MainContent from './components/MainContent/MainContent';
-import { type AppState } from './types';
-import initializeAppState from './utils/appInitializer';
+import { type AppState, type Track } from './types';
+import initializeAppState, {
+  DEFAULT_SEARCH_STATE,
+} from './utils/appInitializer';
 import { handleSearch, handleClearSearch } from './services/dataService';
+import useLocalStorage from './hooks/useLocalStorage';
 
 const App = () => {
   const [appState, setAppState] = useState<AppState>(initializeAppState());
   const { isLoading, results, isSearching, query, error } = appState;
+  const [savedSearch, setSavedSearch] = useLocalStorage<{
+    query: string;
+    results: Track[];
+  }>('searchData', DEFAULT_SEARCH_STATE);
 
-  const setTopCharts = useCallback(async () => {
+  const saveSearchState = useCallback(
+    (currentQuery: string, currentResults: Track[]) => {
+      setSavedSearch({
+        query: currentQuery,
+        results: currentResults,
+      });
+    },
+    [setSavedSearch]
+  );
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (
+        savedSearch &&
+        savedSearch.results.length > 0 &&
+        savedSearch.query === query
+      ) {
+        setAppState((prev) => ({
+          ...prev,
+          results: savedSearch.results,
+          isLoading: false,
+          isSearching: !!savedSearch.query,
+        }));
+      } else if (query && results.length === 0) {
+        await executeSearchTracks(query);
+      } else {
+        await executeLoadTopCharts();
+      }
+    };
+
+    loadInitialData();
+  }, []);
+
+  const executeLoadTopCharts = useCallback(async () => {
     try {
       setAppState((prev) => ({ ...prev, isLoading: true, isSearching: false }));
-      const tracks = await handleClearSearch();
+      const tracks = await handleClearSearch(saveSearchState);
+
       setAppState((prev) => ({
         ...prev,
         results: tracks,
@@ -27,51 +68,42 @@ const App = () => {
         error: (error as Error).message,
       }));
     }
-  }, []);
+  }, [saveSearchState]);
 
-  const setSearchTracks = useCallback(async (searchQuery: string) => {
-    try {
-      setAppState((prev) => ({ ...prev, isLoading: true }));
-      const tracks = await handleSearch(searchQuery);
-      setAppState((prev) => ({
-        ...prev,
-        results: tracks,
-        isLoading: false,
-        isSearching: true,
-        query: searchQuery,
-      }));
-    } catch (error) {
-      setAppState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: (error as Error).message,
-      }));
-    }
-  }, []);
+  const executeSearchTracks = useCallback(
+    async (searchQuery: string) => {
+      try {
+        setAppState((prev) => ({ ...prev, isLoading: true }));
 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      if (query && results.length === 0) {
-        await setSearchTracks(query);
-      } else if (!query) {
-        await setTopCharts();
+        const tracks = await handleSearch(searchQuery, saveSearchState);
+
+        setAppState((prev) => ({
+          ...prev,
+          results: tracks,
+          isLoading: false,
+          isSearching: true,
+          query: searchQuery,
+        }));
+      } catch (error) {
+        setAppState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: (error as Error).message,
+        }));
       }
-    };
-
-    loadInitialData();
-  }, []);
+    },
+    [saveSearchState]
+  );
 
   const updateQuery = useCallback(
     ({ query }: { query: string }) => {
       const trimmedQuery = query.trim();
-
-      if (!trimmedQuery) {
-        setTopCharts();
-      } else {
-        setSearchTracks(trimmedQuery);
-      }
+      const funcToCall = trimmedQuery
+        ? executeSearchTracks
+        : executeLoadTopCharts;
+      funcToCall(trimmedQuery);
     },
-    [setTopCharts, setSearchTracks]
+    [executeLoadTopCharts, executeSearchTracks]
   );
 
   if (error) {
