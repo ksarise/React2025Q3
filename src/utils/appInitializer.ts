@@ -11,8 +11,8 @@ export default function initializeAppState(): AppState {
   const isSearching = !!initialQuery;
 
   return {
-    query: initialQuery,
-    results: savedResults,
+    query: initialQuery || '',
+    results: savedResults || [],
     isLoading: false,
     error: null,
     isSearching,

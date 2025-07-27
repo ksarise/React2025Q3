@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { loadTopCharts, searchTracks } from './dataService';
 import { Component } from 'react';
 import { mockApiTrack } from '../__tests__/mock/mockApiData';
 import { type AppState } from '../types';
