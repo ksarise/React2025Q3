@@ -5,17 +5,21 @@ import Header from './components/Header/Header';
 import MainContent from './components/MainContent/MainContent';
 import Pagination from './components/Pagination/Pagination';
 import Loader from './components/Loader/Loader';
+import { useSelector } from 'react-redux';
+import type { RootState } from './store/store';
 import type { AppState, Track } from './types';
 import { getSavedSearchState } from './utils/localStorage';
 import useLocalStorage from './hooks/useLocalStorage';
 import { handleSearch, handleClearSearch } from './services/dataService';
 import TrackDetails from './components/TrackDetails/TrackDetails';
-import { useSelector } from 'react-redux';
-import { type RootState } from './store/store';
+import Flyout from './components/Flyout/Flyout';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const selectedTracks = useSelector(
+    (state: RootState) => state.selectedItems.selectedTracks
+  );
 
   const urlSearchParams = new URLSearchParams(location.search);
   const queryFromUrl = urlSearchParams.get('search') ?? '';
@@ -158,9 +162,6 @@ const App: React.FC = () => {
     },
     [navigate, location.search]
   );
-  const selectedUrls = useSelector(
-    (state: RootState) => state.selectedItems.selectedUrls
-  );
 
   return (
     <div className="flex min-h-[90vh] bg-gray-900 text-white">
@@ -184,17 +185,13 @@ const App: React.FC = () => {
           onPrev={onPreviousPage}
           onNext={onNextPage}
         />
-        {selectedUrls.length > 0 && (
-          <div className="fixed bottom-0 left-0 z-10 bg-gray-800 p-4 text-white">
-            <p>{selectedUrls.length} items selected</p>
-          </div>
-        )}
       </div>
       {detailEncodedFromUrl && (
         <div className="w-1/3 border-l border-gray-800 p-4">
           <TrackDetails />
         </div>
       )}
+      {selectedTracks.length > 0 && <Flyout />}
     </div>
   );
 };

@@ -8,11 +8,15 @@ import type { RootState } from '../../../store/store';
 
 const SearchItem = ({ track }: SearchItemProps) => {
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const smallImage = track.image.find((img) => img.size === 'small');
   const hasImage = smallImage && smallImage['#text'];
 
   const [isImageLoading, setIsImageLoading] = useState(hasImage ? true : false);
+  const selectedTracks = useSelector(
+    (state: RootState) => state.selectedItems.selectedTracks
+  );
+  const isSelected = selectedTracks.some((t) => t.url === track.url);
 
   const handleImageLoad = () => {
     setIsImageLoading(false);
@@ -47,15 +51,10 @@ const SearchItem = ({ track }: SearchItemProps) => {
     searchParams.set('details', `${track.artist.name}___${track.name}`);
     navigate(`?${searchParams.toString()}`);
   };
-  const dispatch = useDispatch();
-  const selectedUrls = useSelector(
-    (state: RootState) => state.selectedItems.selectedUrls
-  );
-  const isSelected = selectedUrls.includes(track.url);
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      dispatch(selectItem(track.url));
+      dispatch(selectItem(track));
     } else {
       dispatch(unselectItem(track.url));
     }
