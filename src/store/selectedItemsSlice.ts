@@ -5,7 +5,7 @@ export interface SelectedItemsState {
   selectedTracks: Track[];
 }
 
-const initialState: SelectedItemsState = {
+export const initialState: SelectedItemsState = {
   selectedTracks: [],
 };
 

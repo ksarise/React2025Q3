@@ -29,7 +29,7 @@ export const addIndices = (data: ApiResponse): Track[] => {
         const artist: Artist = {
           name: item.artist,
           mbid: item.mbid || '',
-          url: item.url,
+          url: item.url || '',
         };
 
         const streamable: Streamable = {
@@ -42,7 +42,7 @@ export const addIndices = (data: ApiResponse): Track[] => {
           playcount: '0',
           listeners: item.listeners || '0',
           mbid: item.mbid || '',
-          url: item.url,
+          url: item.url || '',
           streamable,
           artist,
           image: item.image || [],

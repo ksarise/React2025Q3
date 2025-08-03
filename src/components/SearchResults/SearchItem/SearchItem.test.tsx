@@ -3,6 +3,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import SearchItem from './SearchItem';
 import { type SearchItemProps, type Image } from '../../../types';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import selectedItemsReducer, {
+  initialState,
+} from '../../../store/selectedItemsSlice';
+import type { RootState } from '../../../store/store';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async (importOriginal) => {
@@ -16,6 +22,23 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.mock('../../Loader/Loader.tsx', () => ({
   default: () => <div data-testid="loader">Loader</div>,
 }));
+
+const renderWithStore = (
+  ui: React.ReactElement,
+  preloadedState?: Partial<RootState>
+) => {
+  const store = configureStore({
+    reducer: {
+      selectedItems: selectedItemsReducer,
+    },
+    preloadedState: {
+      selectedItems: initialState,
+      ...preloadedState,
+    },
+  });
+
+  return render(<Provider store={store}>{ui}</Provider>);
+};
 
 describe('SearchItem Component', () => {
   const defaultTrack: SearchItemProps['track'] = {
@@ -51,8 +74,8 @@ describe('SearchItem Component', () => {
     mockNavigate.mockClear();
   });
 
-  it('should renders correctly with all props', () => {
-    render(
+  it('renders correctly with all props', () => {
+    renderWithStore(
       <SearchItem
         track={defaultTrack}
         isImageLoading={false}
@@ -66,11 +89,11 @@ describe('SearchItem Component', () => {
     expect(screen.getByText('4:05')).toBeInTheDocument();
   });
 
-  it('should shows loader initially and hides it after image load', () => {
-    render(
+  it('shows loader initially and hides it after image load', () => {
+    renderWithStore(
       <SearchItem
         track={defaultTrack}
-        isImageLoading={false}
+        isImageLoading={true}
         onClick={() => {}}
       />
     );
@@ -83,11 +106,11 @@ describe('SearchItem Component', () => {
     expect(img).toBeVisible();
   });
 
-  it('should uses fallback image on image error', () => {
-    render(
+  it('uses fallback image on image error', () => {
+    renderWithStore(
       <SearchItem
         track={defaultTrack}
-        isImageLoading={false}
+        isImageLoading={true}
         onClick={() => {}}
       />
     );
@@ -100,12 +123,12 @@ describe('SearchItem Component', () => {
     );
   });
 
-  it('should displays random duration if track duration is 0', () => {
+  it('displays random duration if track duration is 0', () => {
     const noDurationTrack = { ...defaultTrack, duration: '0' };
-    render(
+    renderWithStore(
       <SearchItem
         track={noDurationTrack}
-        isImageLoading={false}
+        isImageLoading={true}
         onClick={() => {}}
       />
     );
@@ -113,7 +136,7 @@ describe('SearchItem Component', () => {
     expect(screen.getByText(regex)).toBeInTheDocument();
   });
 
-  it('should renders without image if small image is missing', () => {
+  it('renders without image if small image is missing', () => {
     const noImageTrack = {
       ...defaultTrack,
       image: [
@@ -123,21 +146,21 @@ describe('SearchItem Component', () => {
         },
       ],
     };
-    render(
+    renderWithStore(
       <SearchItem
         track={noImageTrack}
-        isImageLoading={false}
+        isImageLoading={true}
         onClick={() => {}}
       />
     );
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  it('should calls navigate on click with correct search params', () => {
-    render(
+  it('calls navigate on click with correct search params', () => {
+    renderWithStore(
       <SearchItem
         track={defaultTrack}
-        isImageLoading={false}
+        isImageLoading={true}
         onClick={() => {}}
       />
     );

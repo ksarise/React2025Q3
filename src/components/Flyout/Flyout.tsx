@@ -3,7 +3,7 @@ import type { RootState } from '../../store/store';
 import { unselectAll } from '../../store/selectedItemsSlice';
 import type { Track } from '../../types';
 
-const SelectedItemsFlyout = () => {
+const Flyout = () => {
   const selectedTracks = useSelector(
     (state: RootState) => state.selectedItems.selectedTracks
   );
@@ -57,4 +57,4 @@ const SelectedItemsFlyout = () => {
   );
 };
 
-export default SelectedItemsFlyout;
+export default Flyout;

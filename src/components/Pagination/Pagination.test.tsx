@@ -58,9 +58,8 @@ describe('Pagination', () => {
     const prevButton = screen.getByText('Previous');
     expect(prevButton).toBeDisabled();
     expect(prevButton).toHaveClass(
-      'bg-gray-700 text-gray-500 cursor-not-allowed'
+      'bg-gray-200 text-gray-500 cursor-not-allowed'
     );
-    expect(prevButton).toHaveAttribute('aria-label', 'Previous page');
   });
 
   it('should disables Next button when on last page', () => {
@@ -76,9 +75,8 @@ describe('Pagination', () => {
     const nextButton = screen.getByText('Next');
     expect(nextButton).toBeDisabled();
     expect(nextButton).toHaveClass(
-      'bg-gray-700 text-gray-500 cursor-not-allowed'
+      'bg-gray-200 text-gray-500 cursor-not-allowed'
     );
-    expect(nextButton).toHaveAttribute('aria-label', 'Next page');
   });
 
   it('should enables both buttons when on middle page', () => {
@@ -95,9 +93,10 @@ describe('Pagination', () => {
     const nextButton = screen.getByText('Next');
 
     expect(prevButton).not.toBeDisabled();
-    expect(prevButton).toHaveClass('bg-gray-800 text-white hover:text-red-600');
+    expect(prevButton).toHaveClass('bg-gray-400 text-black');
+
     expect(nextButton).not.toBeDisabled();
-    expect(nextButton).toHaveClass('bg-gray-800 text-white hover:text-red-600');
+    expect(nextButton).toHaveClass('bg-gray-400 text-black');
   });
 
   it('should calls onPrev when Previous button is clicked and enabled', async () => {

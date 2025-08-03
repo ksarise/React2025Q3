@@ -5,6 +5,10 @@ import App from './App';
 import { getSavedSearchState } from './utils/localStorage';
 import * as dataService from './services/dataService';
 import type { SearchState } from './utils/localStorage';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import selectedItemsReducer from './store/selectedItemsSlice';
+
 vi.mock('./components/Header/Header', () => ({
   default: () => <div>Header Mock</div>,
 }));
@@ -19,6 +23,9 @@ vi.mock('./components/Pagination/Pagination', () => ({
 }));
 vi.mock('./components/TrackDetails/TrackDetails', () => ({
   default: () => <div>TrackDetails Mock</div>,
+}));
+vi.mock('./components/Flyout/Flyout', () => ({
+  default: () => <div>Flyout Mock</div>,
 }));
 
 vi.mock('./services/dataService');
@@ -60,18 +67,31 @@ describe('App Component', () => {
     vi.clearAllMocks();
   });
 
-  function renderWithRouter(initialEntries = ['/']) {
+  function renderWithProviders(initialEntries = ['/']) {
+    const store = configureStore({
+      reducer: {
+        selectedItems: selectedItemsReducer,
+      },
+      preloadedState: {
+        selectedItems: {
+          selectedTracks: [],
+        },
+      },
+    });
+
     return render(
-      <MemoryRouter initialEntries={initialEntries}>
-        <Routes>
-          <Route path="/" element={<App />} />
-        </Routes>
-      </MemoryRouter>
+      <Provider store={store}>
+        <MemoryRouter initialEntries={initialEntries}>
+          <Routes>
+            <Route path="/" element={<App />} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
     );
   }
 
   it('should renders Header, MainContent, Pagination components', async () => {
-    renderWithRouter();
+    renderWithProviders();
 
     expect(screen.getByText('Header Mock')).toBeInTheDocument();
     await waitFor(() => {
@@ -82,7 +102,7 @@ describe('App Component', () => {
 
   it('should calls handleSearch if search query exists in URL', async () => {
     const query = 'test-query';
-    renderWithRouter([`/?search=${query}&page=2`]);
+    renderWithProviders([`/?search=${query}&page=2`]);
 
     await waitFor(() => {
       expect(dataService.handleSearch).toHaveBeenCalledWith(
@@ -94,7 +114,7 @@ describe('App Component', () => {
   });
 
   it('should calls handleClearSearch if no search query in URL', async () => {
-    renderWithRouter(['/']);
+    renderWithProviders(['/']);
 
     await waitFor(() => {
       expect(dataService.handleClearSearch).toHaveBeenCalledWith(
@@ -105,7 +125,7 @@ describe('App Component', () => {
   });
 
   it('should displays TrackDetails if details param present in URL', async () => {
-    renderWithRouter(['/?details=someEncodedValue']);
+    renderWithProviders(['/?details=someEncodedValue']);
 
     await waitFor(() => {
       expect(screen.getByText('TrackDetails Mock')).toBeInTheDocument();
@@ -113,12 +133,12 @@ describe('App Component', () => {
   });
 
   it('should updates URL on search submission via Header', async () => {
-    renderWithRouter(['/']);
+    renderWithProviders(['/']);
     expect(screen.getByText('Header Mock')).toBeInTheDocument();
   });
 
   it('should handles page change via Pagination', async () => {
-    renderWithRouter(['/']);
+    renderWithProviders(['/']);
     expect(screen.getByText('Pagination Mock')).toBeInTheDocument();
   });
 });

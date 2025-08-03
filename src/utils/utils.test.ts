@@ -59,7 +59,7 @@ describe('addIndices utility function', () => {
           artist: {
             name: 'Queen',
             mbid: '',
-            url: '',
+            url: 'https://www.last.fm/music/Queen/_/Bohemian+Rhapsody',
           },
           image: [
             { '#text': 'image1-small', size: 'small' },
@@ -225,7 +225,7 @@ describe('addIndices utility function', () => {
         {
           id: 1,
           name: 'Search Track',
-          artist: { name: 'Search Artist', mbid: 'mbid3', url: '' },
+          artist: { name: 'Search Artist', mbid: 'mbid3', url: 'url3' },
           streamable: { '#text': '0', fulltrack: '0' },
           playcount: '0',
           listeners: '30',
