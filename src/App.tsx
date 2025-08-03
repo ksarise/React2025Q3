@@ -164,7 +164,9 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="flex min-h-[90vh] bg-gray-900 text-white">
+    <div
+      className={`flex min-h-[100vh] bg-gray-100 text-black dark:bg-gray-900 dark:text-white`}
+    >
       <div className={detailEncodedFromUrl ? 'w-2/3' : 'w-full'}>
         <Header onQuery={onSearch} initialQuery={query} />
         {isLoading ? (
@@ -187,7 +189,7 @@ const App: React.FC = () => {
         />
       </div>
       {detailEncodedFromUrl && (
-        <div className="w-1/3 border-l border-gray-800 p-4">
+        <div className="w-1/3 border-l border-gray-300 dark:border-gray-800 p-4">
           <TrackDetails />
         </div>
       )}

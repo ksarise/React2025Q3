@@ -9,23 +9,26 @@ import NotFound from './components/404/404.tsx';
 import About from './components/About/About.tsx';
 import { Provider } from 'react-redux';
 import { store } from './store/store.ts';
+import { ThemeProvider } from './contexts/ThemeContext.tsx';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
   const root = createRoot(rootElement);
   root.render(
     <Provider store={store}>
-      <StrictMode>
-        <Router>
-          <ErrorBoundary fallback={<Error />}>
-            <Routes>
-              <Route path="/" element={<App />} />
-              <Route path="/about" element={<About />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ErrorBoundary>
-        </Router>
-      </StrictMode>
+      <ThemeProvider>
+        <StrictMode>
+          <Router>
+            <ErrorBoundary fallback={<Error />}>
+              <Routes>
+                <Route path="/" element={<App />} />
+                <Route path="/about" element={<About />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ErrorBoundary>
+          </Router>
+        </StrictMode>
+      </ThemeProvider>
     </Provider>
   );
 }

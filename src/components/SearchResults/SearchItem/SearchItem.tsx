@@ -63,9 +63,11 @@ const SearchItem = ({ track }: SearchItemProps) => {
   return (
     <div
       onClick={handleClick}
-      className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-gray-750 transition-colors cursor-pointer"
+      className="grid grid-cols-12 gap-4 items-center px-4 py-3 bg-gray-200 dark:bg-gray-900 hover:bg-gray-400 dark:hover:bg-gray-750 transition-colors cursor-pointer"
     >
-      <div className="col-span-1 text-gray-400 font-medium">{track.id}</div>
+      <div className="col-span-1 text-gray-600 dark:text-gray-400 font-medium">
+        {track.id}
+      </div>
       <div className="col-span-5 flex items-center">
         {hasImage ? (
           <>
@@ -84,14 +86,20 @@ const SearchItem = ({ track }: SearchItemProps) => {
           </>
         ) : null}
         <div>
-          <div className="font-medium">{track.name}</div>
-          <div className="text-xs text-gray-500">{formatedSongDuration()}</div>
+          <div className="font-medium text-black dark:text-white">
+            {track.name}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {formatedSongDuration()}
+          </div>
         </div>
       </div>
       <div className="col-span-3">
-        <div className="text-sm">{track.artist.name}</div>
+        <div className="text-sm text-black dark:text-white">
+          {track.artist.name}
+        </div>
       </div>
-      <div className="col-span-2 text-right text-sm">
+      <div className="col-span-2 text-right text-sm text-gray-700 dark:text-gray-300">
         {parseInt(track.listeners).toLocaleString()}
       </div>
       <div className="col-span-1 flex justify-end">
