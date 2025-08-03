@@ -2,6 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { type SearchItemProps } from '../../../types';
 import Loader from '../../Loader/Loader';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectItem, unselectItem } from '../../../store/selectedItemsSlice';
+import type { RootState } from '../../../store/store';
 
 const SearchItem = ({ track }: SearchItemProps) => {
   const navigate = useNavigate();
@@ -44,6 +47,19 @@ const SearchItem = ({ track }: SearchItemProps) => {
     searchParams.set('details', `${track.artist.name}___${track.name}`);
     navigate(`?${searchParams.toString()}`);
   };
+  const dispatch = useDispatch();
+  const selectedUrls = useSelector(
+    (state: RootState) => state.selectedItems.selectedUrls
+  );
+  const isSelected = selectedUrls.includes(track.url);
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      dispatch(selectItem(track.url));
+    } else {
+      dispatch(unselectItem(track.url));
+    }
+  };
 
   return (
     <div
@@ -78,6 +94,15 @@ const SearchItem = ({ track }: SearchItemProps) => {
       </div>
       <div className="col-span-2 text-right text-sm">
         {parseInt(track.listeners).toLocaleString()}
+      </div>
+      <div className="col-span-1 flex justify-end">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={handleCheckboxChange}
+          onClick={(e) => e.stopPropagation()}
+          className="mr-2 size-5 accent-red-700"
+        />
       </div>
     </div>
   );

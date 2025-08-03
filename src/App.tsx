@@ -10,6 +10,8 @@ import { getSavedSearchState } from './utils/localStorage';
 import useLocalStorage from './hooks/useLocalStorage';
 import { handleSearch, handleClearSearch } from './services/dataService';
 import TrackDetails from './components/TrackDetails/TrackDetails';
+import { useSelector } from 'react-redux';
+import { type RootState } from './store/store';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -156,10 +158,13 @@ const App: React.FC = () => {
     },
     [navigate, location.search]
   );
+  const selectedUrls = useSelector(
+    (state: RootState) => state.selectedItems.selectedUrls
+  );
 
   return (
     <div className="flex min-h-[90vh] bg-gray-900 text-white">
-      <div className={detailEncodedFromUrl ? 'w-2/3 p-4' : 'w-full p-4'}>
+      <div className={detailEncodedFromUrl ? 'w-2/3' : 'w-full'}>
         <Header onQuery={onSearch} initialQuery={query} />
         {isLoading ? (
           <Loader />
@@ -179,6 +184,11 @@ const App: React.FC = () => {
           onPrev={onPreviousPage}
           onNext={onNextPage}
         />
+        {selectedUrls.length > 0 && (
+          <div className="fixed bottom-0 left-0 z-10 bg-gray-800 p-4 text-white">
+            <p>{selectedUrls.length} items selected</p>
+          </div>
+        )}
       </div>
       {detailEncodedFromUrl && (
         <div className="w-1/3 border-l border-gray-800 p-4">

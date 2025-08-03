@@ -43,7 +43,7 @@ const TrackDetails = () => {
   if (!detail) return <div className="p-6">Track not found.</div>;
 
   return (
-    <div className="p-6 relative">
+    <div className="max-h-screen[calc(60vh-4rem)] overflow-auto p-6 relative">
       <button
         onClick={handleClose}
         className="absolute top-2 right-2 text-gray-400 hover:text-white"

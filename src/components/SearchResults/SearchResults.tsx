@@ -16,7 +16,7 @@ const SearchResults = ({
         <div className="col-span-5 min-w-[200px]">TRACK</div>
         <div className="col-span-3 min-w-[150px]">ARTIST</div>
         <div className="col-span-2 text-right min-w-[100px]">LISTENERS</div>
-        <div className="col-span-1 w-12"></div>
+        <div className="col-span-1 text-right min-w-[50px]"> SELECT</div>
       </div>
       <div className="divide-y divide-gray-700 w-full">
         {tracks.map((item) => (
