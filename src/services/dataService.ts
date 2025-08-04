@@ -1,36 +1,71 @@
-import { Component } from 'react';
-import { type AppState } from '../types';
-import { fetchTopCharts, fetchSearchTracks } from './apiService.ts';
-import { setQueryToURL } from '../utils/url.ts';
-import { saveSearch } from '../utils/localStorage';
+import {
+  fetchTopCharts,
+  fetchSearchTracks,
+  fetchTrackInfo,
+} from './apiService';
+import type { Track, TrackDetails } from '../types';
 
-export async function loadTopCharts(app: Component<object, AppState>) {
-  app.setState({ isLoading: true, isSearching: false });
-
-  try {
-    const tracks = await fetchTopCharts();
-    app.setState({ results: tracks });
-  } catch (error) {
-    console.error('Failed to load top charts:', error);
-  } finally {
-    app.setState({ isLoading: false });
+export async function handleSearch(
+  query: string,
+  saveSearch: (
+    query: string,
+    tracks: Track[],
+    page: number,
+    totalPages: number,
+    totalResults: number
+  ) => void,
+  page: number
+) {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return handleClearSearch(saveSearch, page);
   }
+  const { tracks, pagination } = await fetchSearchTracks(trimmed, page);
+  saveSearch(
+    trimmed,
+    tracks,
+    pagination.currentPage,
+    pagination.totalPages,
+    pagination.totalResults
+  );
+
+  return { tracks, pagination };
 }
 
-export async function searchTracks(
-  app: Component<object, AppState>,
-  query: string
+export async function handleClearSearch(
+  saveSearch: (
+    query: string,
+    tracks: Track[],
+    page: number,
+    totalPages: number,
+    totalResults: number
+  ) => void,
+  page: number
 ) {
-  app.setState({ isLoading: true, query, isSearching: true });
-  setQueryToURL(query);
+  const { tracks, pagination } = await fetchTopCharts(page);
 
-  try {
-    const tracks = await fetchSearchTracks(query);
-    saveSearch(query, tracks);
-    app.setState({ results: tracks });
-  } catch (error) {
-    console.error('Search failed:', error);
-  } finally {
-    app.setState({ isLoading: false });
-  }
+  saveSearch(
+    '',
+    tracks,
+    pagination.currentPage,
+    pagination.totalPages,
+    pagination.totalResults
+  );
+  return { tracks, pagination };
+}
+
+export async function handleTrackInfo(
+  artist: string,
+  track: string
+): Promise<TrackDetails> {
+  const data = await fetchTrackInfo(artist, track);
+  return {
+    name: data.name,
+    artist: { name: data.track.artist.name },
+    album: { title: data.track.album.title },
+    wiki: { published: data.track.wiki?.published },
+    listeners: data.track.listeners,
+    playcount: data.track.playcount,
+    duration: data.track.duration,
+  };
 }

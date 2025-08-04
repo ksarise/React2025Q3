@@ -27,16 +27,23 @@ export interface Track {
   id: number;
 }
 export interface ApiResponse {
-  '@attr': {
-    page: string;
-    pages: string;
-    perPage: string;
-    total: string;
-  };
   tracks?: {
     track: Track[];
+    '@attr': {
+      page: string;
+      totalPages: string;
+      perPage: string;
+      total: string;
+    };
   };
   results?: {
+    'opensearch:totalResults': string;
+    'opensearch:itemsPerPage': string;
+    'opensearch:Query': {
+      '@role': string;
+      '#text': string;
+      startPage: string;
+    };
     trackmatches: {
       track: TrackSearchResult[];
     };
@@ -55,10 +62,12 @@ export type SearchResultsProps = {
   tracks: Track[];
   isSearching: boolean;
   searchQuery: string;
+  onItemClick: (track: Track) => void;
 };
 export type SearchItemProps = {
   track: Track;
   isImageLoading: boolean;
+  onClick: () => void;
 };
 export type AppState = {
   query: string;
@@ -66,13 +75,14 @@ export type AppState = {
   isLoading: boolean;
   error: string | null;
   isSearching: boolean;
+  currentPage: number;
+  totalPages: number;
+  totalResults?: number;
+  itemsPerPage: number;
 };
 export type SearchProps = {
   onQuery: (arg0: { query: string }) => void;
   initialQuery?: string;
-};
-export type SearchState = {
-  query: string;
 };
 export interface HeaderProps {
   onQuery: (arg: { query: string }) => void;
@@ -84,8 +94,20 @@ export interface MainContentProps {
   isSearching: boolean;
   query: string;
   error: string | null;
+  onItemClick: (track: Track) => void;
 }
 export interface AppComponent extends React.Component<object, AppState> {
   loadTopCharts: () => Promise<void>;
   searchTracks: (query: string) => Promise<void>;
+}
+export interface TrackDetails {
+  name: string;
+  artist: { name: string };
+  album: { title: string };
+  listeners?: string;
+  playcount?: string;
+  duration?: string;
+  wiki?: {
+    published: string;
+  };
 }

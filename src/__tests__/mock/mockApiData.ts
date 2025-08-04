@@ -1,8 +1,8 @@
 import type { ApiResponse, Artist, Track } from '../../types';
 
 const mockApiData: ApiResponse = {
-  '@attr': { page: '1', pages: '1', perPage: '2', total: '2' },
   tracks: {
+    '@attr': { page: '1', totalPages: '1', perPage: '2', total: '2' },
     track: [
       {
         id: 1,
@@ -49,8 +49,14 @@ const mockApiData: ApiResponse = {
 };
 export { mockApiData };
 const mockApiSongSearchData: ApiResponse = {
-  '@attr': { page: '1', pages: '1', perPage: '1', total: '1' },
   results: {
+    'opensearch:totalResults': '1',
+    'opensearch:itemsPerPage': '1',
+    'opensearch:Query': {
+      '@role': '',
+      '#text': '',
+      startPage: '1',
+    },
     trackmatches: {
       track: [
         {
@@ -59,7 +65,7 @@ const mockApiSongSearchData: ApiResponse = {
           url: 'https://www.last.fm/music/Queen/_/Bohemian+Rhapsody',
           streamable: '1',
           listeners: '1000',
-          mbid: 'f1',
+          mbid: '',
           image: [
             { '#text': 'image1-small', size: 'small' },
             { '#text': 'image1-large', size: 'large' },
@@ -92,3 +98,15 @@ export const mockApiTrack: Track = {
   ],
 };
 export { mockApiSongSearchData };
+
+export const mockApiTrackDetails = {
+  name: 'Track Name',
+  track: {
+    artist: { name: 'Artist' },
+    album: { title: 'Album Title' },
+    wiki: { published: '2022-01-01' },
+    listeners: '12345',
+    playcount: '67890',
+    duration: '300',
+  },
+};
