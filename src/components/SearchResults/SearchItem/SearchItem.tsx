@@ -2,14 +2,21 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { type SearchItemProps } from '../../../types';
 import Loader from '../../Loader/Loader';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectItem, unselectItem } from '../../../store/selectedItemsSlice';
+import type { RootState } from '../../../store/store';
 
 const SearchItem = ({ track }: SearchItemProps) => {
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const smallImage = track.image.find((img) => img.size === 'small');
   const hasImage = smallImage && smallImage['#text'];
 
   const [isImageLoading, setIsImageLoading] = useState(hasImage ? true : false);
+  const selectedTracks = useSelector(
+    (state: RootState) => state.selectedItems.selectedTracks
+  );
+  const isSelected = selectedTracks.some((t) => t.url === track.url);
 
   const handleImageLoad = () => {
     setIsImageLoading(false);
@@ -45,12 +52,22 @@ const SearchItem = ({ track }: SearchItemProps) => {
     navigate(`?${searchParams.toString()}`);
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      dispatch(selectItem(track));
+    } else {
+      dispatch(unselectItem(track.url));
+    }
+  };
+
   return (
     <div
       onClick={handleClick}
-      className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-gray-750 transition-colors cursor-pointer"
+      className="grid grid-cols-12 gap-4 items-center px-4 py-3 bg-gray-200 dark:bg-gray-900 hover:bg-gray-400 dark:hover:bg-gray-750 transition-colors cursor-pointer"
     >
-      <div className="col-span-1 text-gray-400 font-medium">{track.id}</div>
+      <div className="col-span-1 text-gray-600 dark:text-gray-400 font-medium">
+        {track.id}
+      </div>
       <div className="col-span-5 flex items-center">
         {hasImage ? (
           <>
@@ -69,15 +86,30 @@ const SearchItem = ({ track }: SearchItemProps) => {
           </>
         ) : null}
         <div>
-          <div className="font-medium">{track.name}</div>
-          <div className="text-xs text-gray-500">{formatedSongDuration()}</div>
+          <div className="font-medium text-black dark:text-white">
+            {track.name}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {formatedSongDuration()}
+          </div>
         </div>
       </div>
       <div className="col-span-3">
-        <div className="text-sm">{track.artist.name}</div>
+        <div className="text-sm text-black dark:text-white">
+          {track.artist.name}
+        </div>
       </div>
-      <div className="col-span-2 text-right text-sm">
+      <div className="col-span-2 text-right text-sm text-gray-700 dark:text-gray-300">
         {parseInt(track.listeners).toLocaleString()}
+      </div>
+      <div className="col-span-1 flex justify-end">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={handleCheckboxChange}
+          onClick={(e) => e.stopPropagation()}
+          className="mr-2 size-5 accent-red-700"
+        />
       </div>
     </div>
   );

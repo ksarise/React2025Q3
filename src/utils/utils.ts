@@ -11,6 +11,7 @@ export const addIndices = (data: ApiResponse): Track[] => {
     return data.tracks.track.map((track, index) => ({
       ...track,
       id: index + 1,
+      url: track.url,
       artist:
         typeof track.artist === 'string'
           ? { name: track.artist, mbid: '', url: '' }
@@ -28,7 +29,7 @@ export const addIndices = (data: ApiResponse): Track[] => {
         const artist: Artist = {
           name: item.artist,
           mbid: item.mbid || '',
-          url: '',
+          url: item.url || '',
         };
 
         const streamable: Streamable = {

@@ -18,10 +18,6 @@ export async function fetchTopCharts(
   const data: ApiResponse = await getCharts(page);
   const pagination = extractPaginationData(data);
   const fullList = addIndices(data);
-  // костыль для порой ломающегося апи
-  // const start = (pagination.itemsPerPage || 10) * (page - 1);
-  // const end = start + (pagination.itemsPerPage || 10);
-  // const paginated = fullList.slice(start, end);
 
   return {
     tracks: fullList,

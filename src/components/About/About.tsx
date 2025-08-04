@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 const About = () => {
   return (
-    <div className="min-h-[90vh] bg-gray-900 text-white min-w-[800px]">
+    <div className="min-h-[90vh] bg-gray-100 text-black dark:bg-gray-900 dark:text-white min-w-[800px]">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">About</h1>
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+        <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
           <h2 className="text-2xl font-semibold mb-4">Created by:</h2>
           <div className="flex items-center mb-6">
             <div>
@@ -23,7 +23,7 @@ const About = () => {
           </div>
         </div>
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           <a
             href="https://rs.school/courses/reactjs"
             target="_blank"

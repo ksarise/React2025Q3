@@ -19,7 +19,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "jsx": "react"
+    "jsx": "react",
+    "types": ["vitest"]
   },
   "include": ["vite.config.ts", "test/vitest.setup.ts"]
 }

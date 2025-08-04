@@ -5,15 +5,21 @@ import Header from './components/Header/Header';
 import MainContent from './components/MainContent/MainContent';
 import Pagination from './components/Pagination/Pagination';
 import Loader from './components/Loader/Loader';
+import { useSelector } from 'react-redux';
+import type { RootState } from './store/store';
 import type { AppState, Track } from './types';
 import { getSavedSearchState } from './utils/localStorage';
 import useLocalStorage from './hooks/useLocalStorage';
 import { handleSearch, handleClearSearch } from './services/dataService';
 import TrackDetails from './components/TrackDetails/TrackDetails';
+import Flyout from './components/Flyout/Flyout';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const selectedTracks = useSelector(
+    (state: RootState) => state.selectedItems.selectedTracks
+  );
 
   const urlSearchParams = new URLSearchParams(location.search);
   const queryFromUrl = urlSearchParams.get('search') ?? '';
@@ -158,8 +164,10 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="flex min-h-[90vh] bg-gray-900 text-white">
-      <div className={detailEncodedFromUrl ? 'w-2/3 p-4' : 'w-full p-4'}>
+    <div
+      className={`flex min-h-[100vh] bg-gray-100 text-black dark:bg-gray-900 dark:text-white`}
+    >
+      <div className={detailEncodedFromUrl ? 'w-2/3' : 'w-full'}>
         <Header onQuery={onSearch} initialQuery={query} />
         {isLoading ? (
           <Loader />
@@ -181,10 +189,11 @@ const App: React.FC = () => {
         />
       </div>
       {detailEncodedFromUrl && (
-        <div className="w-1/3 border-l border-gray-800 p-4">
+        <div className="w-1/3 border-l border-gray-300 dark:border-gray-800 p-4">
           <TrackDetails />
         </div>
       )}
+      {selectedTracks.length > 0 && <Flyout />}
     </div>
   );
 };

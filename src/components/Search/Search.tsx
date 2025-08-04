@@ -40,7 +40,7 @@ const Search = ({ initialQuery = '', onQuery }: SearchProps) => {
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          className="w-full bg-gray-800 text-white py-3 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 border border-gray-700"
+          className="w-full bg-gray-200 text-black dark:bg-gray-800 dark:text-white py-3 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 border border-gray-300 dark:border-gray-700"
         />
         <button
           type="button"
